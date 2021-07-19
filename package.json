@@ -1,0 +1,27 @@
+{
+  "name": "wetube",
+  "version": "1.0.0",
+  "description": "clone coding",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gimsangjun/wetube.git"
+  },
+  "scripts": {
+    "dev": "nodemon --exec babel-node src/server.js"
+  },
+  "author": "gimsangjun",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gimsangjun/wetube/issues"
+  },
+  "homepage": "https://github.com/gimsangjun/wetube#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/node": "^7.14.7",
+    "@babel/preset-env": "^7.14.7",
+    "nodemon": "^2.0.12"
+  }
+}
