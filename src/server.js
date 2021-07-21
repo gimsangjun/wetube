@@ -1,19 +1,23 @@
 import express from "express";
+import morgan from "morgan"
+
 
 const PORT = 4000;
-
 const app = express();
+const logger = morgan("dev");
 
-const handleHome = (req, res) => {
-    return res.end();
+const Home = (req, res) => {
+    return res.send("I love middlewares");
 };
 
-const handleLogin = (req, res) => {
-    return res.send("Login here");
+const login = (req, res) => {
+  return res.send("login");
 };
 
-app.get("/", handleHome);
-app.get("/login", handleLogin);
+app.use(logger);
+app.get("/", Home);
+app.get("/login", login);
+
 const handleListening = () => console.log(`Server listnting on http://localhost:${PORT} 🚀`);
  
-app.listen(PORT, handleListening); //서버가 만들어졌고, 서버가 port 4000을 리스닝하고있다. 
+app.listen(PORT, handleListening); 

@@ -22,11 +22,11 @@
 
 ### package-lock.json
 
-- 나의 패키지들을 안전하게 관리해준다. 그래서 다른사람들도 npm i 만 하면 정확히 나랑 똑같은 버전을 다운로드 받게 된다. npm이 똑똑해서 다 관리 해준다.
+- 나의 패키지들을 안전하게 관리해준다. 그래서 다른사람들도 npm i 만 하면 정확히 나랑 똑같은 버전을 다운로드 받게 된다.(나의 package.json파일을 가지고있는 상태여야한다.) npm이 똑똑해서 다 관리 해준다.
 
 ### Babel
 
-- nodeJS가 이해하지 못하는 최신코드를 [babel](https://babeljs.io/setup#installation)이 컴파일해줄것이다.
+- nodeJS가 이해하지 못하는 최신코드를 [babel](https://babeljs.io/setup#installation)node가 컴파일해줄것이다.
 - touch babel.config.json , touch라는 명령어는 파일을 만들어 주는 명령어이다.
 - "presets": ["@babel/preset-env"] 은 최신 자바스크립트를 쓸수 있는 플러그인이다.
 - 최종적으로 babel-node를 설치하면 babel로 js파일을 최신문법으로 실행시킬수 있다.
@@ -43,7 +43,9 @@
 app.listen(PORT, handleListening); //서버가 만들어졌고, 서버에게 어떤 port를 listening할지 얘기해줘야한다.
 ```
 
-- 뒤에 함수는 callback함수라고 하는데 시작할때 작동하는 함수라고 한다. 나중에 좀더 알아봐야할듯.
+- 서버가 내 컴퓨터 전체를 listen할수는 없다. 이미 많은 프로그램들이 port들을 통해서 소통하고있다. 4000번을 쓰는게 백앤드에서는 관례이다. 나중에는 이 port가 이미쓰고있다고 에러가 생길수도 있다.
+- 뒤에있는 함수가 [callback](https://dalkomit.tistory.com/65)함수라고 하는지는 모르겠는데(이 함수는 listening이 시작되면 호출되는 함수이다.),
+  무엇인가 일을 다른 객체에게 시키고, 그일이 끝나는것을 기다리는게 아니라, 나를 다시 부를때까지 내할일 하고있는것..., 비동기 방식이라고한다.
 
 ### request에 respond하는방법을 알아볼것이다.
 
@@ -66,6 +68,48 @@ const handleHome = (req, res) => {
 // request object를 살펴보면 쿠키나 method같은 정보를 얻을수 있었다.
 ```
 
-- [document](https://expressjs.com/ko/api.html#express) 메소드들에 대한 설명이 있따.
+- [document](https://expressjs.com/ko/api.html#express) 메소드들에 대한 설명이 있다. 여기에 있는게 전부이다.
 - 어떤 사이트에 접속할때마다 get request 생성하고, 이 get request에 응답하는 서버가 있어야 한다.
-- [Route](https://dog-paw.tistory.com/entry/7-MEAN-%EC%8A%A4%ED%83%9D-Express-Route-%EC%A0%95%EC%9D%98) [Route](https://stylishc.tistory.com/120)
+- [Route](https://dog-paw.tistory.com/entry/7-MEAN-%EC%8A%A4%ED%83%9D-Express-Route-%EC%A0%95%EC%9D%98)route는 그냥 url이라고 보면될듯하다. 경로! [Route](https://stylishc.tistory.com/120) - router는 handler로 URL을 정돈하는 것이다.
+
+### middleware ~=== controller
+
+```js
+const gossipMiddleware = (req, res, next) => {
+  console.log("I`m in the miiddle!");
+  console.log(`Someone is going to ${req.url}`);
+  next(); //express next()를 보고 다음함수인 handleHome을 호출할것이다.
+  // 그래서 이런식으로 보면 handleHome은 final ware가 되는것이다.
+  // 모든 controller가 middleware가 될수있다는 사실을 알고 있으셈.
+  // middleware는 request에 응답하는것이 아닌 지속시켜주는것이다.
+};
+
+const handleHome = (req, res) => {
+  return res.send("I love middlewares");
+};
+// next는 다음 함수를 실행시켜준다.
+
+app.get("/", gossipMiddleware, handleHome); // 이런식으로 연결되어있어야 next()를 했을때 다음함수로 이동한다.
+```
+
+- [expressjs.com](https://expressjs.com/ko/guide/using-middleware.html)
+- 중간에 있는 소프트웨어를 의미한다. 브라우저가 뭔가를 request를 하면 서버가 response를 해준다. 이 사이에 middleware가 있는 것이다. 모든 handler가 middleware이다.
+- handler라는 말대신 controller라는 말을 이제부터 쓸것이다. controller에는 사실
+  req,res 두개말고 인자가 하나 더있다. 그게바로 다음함수를 가르키는 next이다.
+- 함수를 controller라고 생각해도될듯하다.
+- next()를 사용해야 middleware라고한다. 없으면 middleware라고할수없다. 연결이 끊어지기 때문이다. controller와 middleware가 거의 같은 의미로 쓰인다.
+- 마지막 controoler에는 next를 관습적으로 쓰지 않는다.
+
+### app.use()
+
+- 어떤 url에도 작동하는 middleware를 만들수 있게 해준다.
+- 즉, 모든 route에서 이 함수를 사용 하는 것이다.
+- app.get()보다 높은위치에 둬야 모든 route에서 작동을 한다.
+- 순서가 중요하다. 시각화 하는 방법은 연결이 위에서부터 차례대로 온다고 생각하자.
+
+### middleware morgan
+
+- [morgan](https://www.npmjs.com/package/morgan) nodejs용 request logger middleware이다.
+- morgan함수를 호출하면, 내가 설정한대로 middleware를 return해준다. 함수를 리턴해주는것이다.!(다섯가지옵션이 있다. 소스코드들도 볼수있는데 한번보면 좋을듯. 문서도.)
+
+### status code란?
