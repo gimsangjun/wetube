@@ -112,4 +112,73 @@ app.get("/", gossipMiddleware, handleHome); // 이런식으로 연결되어있�
 - [morgan](https://www.npmjs.com/package/morgan) nodejs용 request logger middleware이다.
 - morgan함수를 호출하면, 내가 설정한대로 middleware를 return해준다. 함수를 리턴해주는것이다.!(다섯가지옵션이 있다. 소스코드들도 볼수있는데 한번보면 좋을듯. 문서도.)
 
+### router란?
+
+- 내가 작업중인 주제를 기반으로 URL을 그룹화 해준다.
+
+```js
+
+//글로벌 라우터
+/ -> Home
+/join -> Join
+/login -> Login
+/search -> Search
+// 논리상으로는 user/login인데 예외상황으로 URL을 깔끔하게하고, 짧게한다.
+// 결론은 URL을 깔끔하게하기위해 예외상황을 둘수있다.
+//유저 라우터
+/users/edit -> Edit user
+/users/delete -> Delete user
+//비디오 라우터
+/videos/watch -> Watch Video
+/videos/edit -> Edit Video
+/videos/delete -> Delete Video
+/videos/comments -> Comment on a video
+/videos/comments/delete -> Delete A Comment of a Video
+
+/delete-users -> /users/delete //이런식으로 바꾸어 관리를 쉽게 할수있다. 코드가 한곳에 너무모여있으면 복잡하니까
+/users //를만들고 그뒤에 URL을 추가해주는것이다.
+```
+
+- [routing](http://expressjs.com/en/starter/basic-routing.html) :특정 엔드포인트(특정경로에 == URL)에 애플리케이션이 응답하는 방식을 결정하는것을 말함.
+- express에서 제공하는 (express.router)[https://expressjs.com/ko/guide/routing.html]를 이용하면 모듈로써 쉽게 관리할수있다. 유저만 보더라도 회원가입, 정부수정 등등 너무많기 때문에 쪼개서 쉽게 관리하기 위함. 여기에서는 routers라는 폴더(global,user,video)를 만들어서 3가지 라우터마다 각각의 파일을 만들어 줬음.하나의 파일마다 하나의 모듈이라고 생각하면될듯.
+
+```js
+//server.js
+app.use(logger);
+app.use("/", globalRouter);
+app.use("/videos", videoRouter);
+app.use("/users", userRouter);
+// Router들은 따로 파일을 만들어서 모듈화 해주었다.
+```
+
+- /videos로 경로로오면 videoRouter로 일단 들어간뒤, 거기서다시(videoRouter.js파일에서,하나씩 쪼개서 모둘화 해줬으니까) /watch, /edit을 찾아 이동한다.
+
+### controller == function
+
+- router파일안에는 router파일만 있어야하기때문에 controller(function)폴더를 또 따로 만들어 줄것이다.
+- 나중에는 데이터베이스등 여러가지를 넣어야하기 때문에 분리하는게 좋다.
+- router는 결국 controller(function)을 사용하는 입장이다.
+- 결국, 생각해보니 router라는 개념이 나온것도 모두 한파일에 놔두기에는 너무 복잡해지니 세세하게 나눈듯 하다.
+
+### export import
+
+- 내 프로젝트의 파일들은 모두다 독립적이기때문에 export을 해야만 공유할수 있다.
+
+```js
+//globalRouter.js
+globalRouter.get("/", handleHome);
+
+export default globalRouter;
+// default의 뜻은 다른 파일에서 import를 할때
+// import aijewfi from "./routers/globalRouter"; 이런식으로 이름을 마음대로할수있다. 하지만 헷갈릴수있기때문에 대부분 똑같게 한다.
+```
+
+- export default: 위처럼 default를 하면 하나밖에 export를 하지못한다. 여러개를 할려면? [Link](https://ko.javascript.info/import-export) 대부분 여러개를 export한다.
+- export default 인경우에는 import할때 이름을 마음대로 할수 있지만, export를 여러개를 해야할경우 정확히 그 이름으로 설정해주어야한다.
+
+### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
+
+- 일단은 코드를 작성하고 더러워도 상관없음.
+- 코드를 작성한 시간만큼 코드를 정리를 하는데에 시간을 쓰는거임
+
 ### status code란?
