@@ -9,17 +9,8 @@ const PORT = 4000;
 const app = express();
 const logger = morgan("dev");
 
-const globalRouter= e 
-
-const Home = (req, res) => {
-    return res.send("I love middlewares");
-};
-
-const login = (req, res) => {
-  return res.send("login");
-};
-
 app.use(logger);
+
 app.use("/", globalRouter);
 app.use("/videos", videoRouter);
 app.use("/users", userRouter);
