@@ -26,7 +26,7 @@
 
 ### Babel
 
-- nodeJS가 이해하지 못하는 최신코드를 [babel](https://babeljs.io/setup#installation)node가 컴파일해줄것이다.
+- nodeJS가 이해하지 못하는 최신코드를 [babel](https://babeljs.io/setup#installation)node가 컴파일해줄것이다. 검색키워드 babel install 맨위 게시물.
 - touch babel.config.json , touch라는 명령어는 파일을 만들어 주는 명령어이다.
 - "presets": ["@babel/preset-env"] 은 최신 자바스크립트를 쓸수 있는 플러그인이다.
 - 최종적으로 babel-node를 설치하면 babel로 js파일을 최신문법으로 실행시킬수 있다.
@@ -62,6 +62,7 @@ const handleHome = (req, res) => {
   console.log(req);
   return res.end(); // request를 보내면 return으로 response를 해줘야 하고, 이 메서드는 response를 끝내겠다는 것이다.
   return res.send("i still love you"); // 이렇게도 할수 있다. 이러면 브라우저가 글씨가 나온다.
+  // 이러한것들을 한줄로 쓰면 return을 생략해도된다.
 };
 // eventlistener에 브라우저가 공짜로 event라는 argument에 넣어주는것처럼, route handler에는 두개의 object가 있다.(request,response)
 // 즉 home으로 get request가 오면, express는 handleHome에다가 두개의 object를 넣어주는 것이다.
@@ -200,6 +201,9 @@ console.log(req.params); // 또는 console.log(req.params.id);
 
 - [regular expression](https://chrisjune-13837.medium.com/%EC%A0%95%EA%B7%9C%EC%8B%9D-%ED%8A%9C%ED%86%A0%EB%A6%AC%EC%96%BC-%EC%98%88%EC%A0%9C%EB%A5%BC-%ED%86%B5%ED%95%9C-cheatsheet-%EB%B2%88%EC%97%AD-61c3099cdca8) [expressjs](https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Regular_Expressions): 문자열로부터 특정 정보를 추출해내는 방법이다.모든 프로그래밍언어에 존재한다.
 - 정규표현식으로 연습할수 있는 곳 [Link](https://regexr.com/)
+- [stackoverflow](https://stackoverflow.com/questions/15228901/express-js-filter-a-number-and-a-string-in-the-url/15229495) 검색키워드 express url only number
+- [stackoverflow](https://stackoverflow.com/questions/34095126/express-router-id) 검색키워드 express /:id
+- express문서에서 /:id 에 대한 내용을 찾아보니 [Link](http://expressjs.com/ko/api.html#req) 여기있었음. 이 내용은 express에만 해당되는것인가?
 
 ```js
 videoRouter.get("/:id(\\d+)", see);
@@ -210,9 +214,146 @@ videoRouter.get("/:id(\\d+)/delete", deleteVideo);
 - id라는것을 그대로 둔 이유: 이름을 얻기위해서
 - \의 의미, 이것은 단순한 문자가 아니라는것을 알려주기위해서
 
+### Express template
+
+- controller(function)에서 html을 return하는방법이다.
+- [Pug](https://www.zerocho.com/category/NodeJS/post/578c64621e3613150037d3b3) (구 Jade) - 가장 유요한 템플릿중 하나. 공식 [npm](npmjs.com/package/pug) 여기서 보는게 좋은듯 간단한 문법(Syntax)도 볼수있어서.
+- express에게 이제부터 사용할 뷰 엔진은 pug라고 말을 해주어야한다.
+- [expressjs](https://expressjs.com/ko/4x/api.html#app)에서 Application Settings( app.set() )을 보면 property에 view engine이라고 있다.
+- 1단계 pug 설치(npm i pug) <br>
+  2단계 pug를 뷰 엔진으로 설정(app.set("view engine", "pug")) <br>
+  3단계 실제로 pug파일을 생성한다.
+- expressjs에서 문서를 보면 views에서 default로 process.cwd() + "/views" 라고 적혀있는데, cwd의 뜻은 current working directory이다. 즉, 현재 폴더에서 views에서 기본적으로 파일을 찾겠다는 것이다.
+- 이제 pug파일을 렌더링해주어야하는데 하는 방법은, res.redner("파일이름")이다.
+- 하지만 에러가 생길거임. 실제로 파일은 wetube/src/views에 있기때문에(wetube/views)에서 찾으니 안보이는거임.(에러를 꼼꼼히 읽어서 뭐가 문제인지 아는게 중요한듯.)
+- 해결방법은 디폴트값을 수정해주는것임. app.set("views", process.cwd() + "/src/views");
+- [렌더링](https://velog.io/@ru_bryunak/%EB%A0%8C%EB%8D%94%EB%A7%81%EC%9D%B4%EB%9E%80)이란? html파일을 받아 브라우저에 뿌려주는 과정.
+
+### pug Interplation 보간법 Escape ,HTML Entity
+
+```js
+doctype html
+html(lang="ko")
+    head
+        title Wetube
+    body
+        h1 Welcome to Wetube
+        footer &copy; #{new Date().getFullYear()} Wetube
+```
+
+- 위에서 #{}이런식(h1=pageTitle 이렇게쓰면 variable로 인식한다. 하지만 중간에 다른 string을 끼워놓을수 없다.) 으로 중간에 Jscode 를 껴놓는것을 [보간법](https://pugjs.org/language/interpolation.html)이라고 한다. Pug 보간법[또 다른 링크](https://sodocumentation.net/pug/topic/9565/interpolation-with-pug)
+
+-그리고 &copy등은 [HTML Entity](https://www.zerocho.com/category/HTML&DOM/post/587f50b1308ed50018a00d51)라고한다.(좋은사이트인거같다.) 특수문자를 표현하기위해 사용한다.
+
+### pug partials
+
+- 반복되는 부분을 파일로 쪼개서 쉽게 불러올수 있다.!
+- [공식문서](https://pugjs.org/api/getting-started.html) [includes](https://pugjs.org/language/includes.html)를 눌러보면 다른파일을 포함시킬수있는 방법이 있다.(이런식으로 문서를 읽는 방법을 잘 배워야 할거 같다.)
+- 첫번째 이것으로 알수 있는점은 깔끔한 html을 작성하도록 해준다는 것이다. <br>
+  두번째 우리의 html에 자바스크립트를 포함시킬수 있다는 점.
+  세번째 우리가 반복하지 하지않고 한번에 모든 템플릿을 업데이트할수 있다는 점이다.
+- 프로그래머들은 반복되는것을 싫어하기 때문에(게으르기때문에) 더 반복되는것을 줄일수 있다. 아래에서 반복된다.
+
+### pug Template Inheritance (상속)
+
+- [상속](https://pugjs.org/language/inheritance.html)이 왜 쓰냐면은, 일종의 베이스 틀을 만들어 주기때문이다. 계속 베이스가 반복되기때문에 그것마저 줄여줄려고 상속이라는것을 쓰는것이다.
+- 모든파일이 베이스부터 확장해 나가는것이다.
+- 하지만 여기서 끝나는게 아니라 block이라는 개념도 알아야 한다. -> 무언가를 집어 넣을수 있는곳. 다른 pug파일이 채워놓을수 있는곳. 공식 문서를 보면 알수 있다.
+- res.render("",{})는 2가지 인수를 받는데 하나는 view 이름이고 하나는 템플릿에 보낼 변수이다. express 문서를 보면 변수를 보낼수 있다고 나와있고, Interplation(보간법)와 활용해서 express에서 변수의 값을 넘길수 있다.(렌더링하는과정에서)
+
+### pug conditionals,iteration
+
+- doc에 너무 자세히 잘나와있어서 설명안해도 될듯.
+- [conditionals](https://pugjs.org/language/conditionals.html) 조건문
+- [iteration](https://pugjs.org/language/iteration.html) 반복
+- [mixin](https://pugjs.org/language/mixins.html) 똑똑한 partial이다. 데이터를 받을 수 있는 일종의 미리 만들어진 HTML block이라 볼수 있다. [컴포넌트](https://mommoo.tistory.com/55)의 재사용을 위해서 만들어진듯. 유튜브를 보면 비디오에 댓글, 평점, 좋아요 등등이 하나의 컴포넌트라고 생각하고, 그것들을 일일히 copy paste하기에는 게으르니, 반복을 줄이기위해, 그리고 코드의 재사용을 하기위해서.
+
+### MVP css
+
+- HTML 태그에 몇가지 기본스타일을 입혀준다. [Link](https://andybrewer.github.io/mvp/)
+- 너무 못생긴상태로 하면 좀 그러니까 뭐라도 입힌것이다. 그냥 임시방편정도.
+
+### 텍스트와 variable을 섞는법
+
+```js
+a((href = "/video/" + video.id));
+a((href = `/video/ + ${video.id}`));
+
+const { id } = req.params;
+const id = req.params.id; // ES6방식
+```
+
+- [req.parms](https://wooooooak.github.io/web/2018/11/10/req.params-vs-req.query/) 어떤것을 클릭했을때 어떤 objcet 클릭되어있는지 확인하는 용도로 사용할수 있을듯.
+
+### ternary operator
+
+- [Link](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Operators/Conditional_Operator) js에서 제공되는 연산자이다.
+
+```js
+h3 #{video.views} #{video.views === 1 ? "view" : "views" }
+```
+
+### 절대경로(absoulte url)와 상대경로(relative url)
+
+-제일앞에 /가있으면 절대경로, 무조건 루트에서 시작. <br>
+a(href="/edit")--->localhost:4000/edit <br>
+a(href="edit")--->localhost:4000/videos/edit <br>
+a(href=`${video.id}/edit`)--->localhost:4000/videos/1/edit
+
+> watch.pug에서
+> href="edit"의 상대 경로가 왜 videos/edit으로 가나요??
+> 현재 경로가 videos/:id이므로 videos/:id/edit으로 가야하는거 아닌가요??
+>
+> > No, it does not add to the path, it changes the last path.
+
+### POST와 GET
+
+```js
+block content
+    h4 Change Titie of video
+    form(action"" method="POST")
+        input(placeholder="Viedo Title" value=video.title,required)
+        input(value="Save",type="submit")
+```
+
+- [form태그](https://www.nextree.co.kr/p8428/) 기본적으로 method는 GET으로 되어있음.
+  <br> GET은 데이터를 요청할경우 씀, 우리가 네이버검색하거나 유튜브검색할때 씀. URL끝에 붙어서 눈에보임. -> 보안에 취약
+  <br> POST은 데이터를 처리할경우 씀.로그인할때나 유튜브 제목수정 등에 쓰임.
+  <br> 즉 form태그의 method는 form과 back end사이의 정보전송에 관한 방식이다. 착각하지말아야 할것, post도 request를 받으면 response 해줘야한다는 것.
+
+### POST를 받았을때 back end에서 처리하는 방법
+
+```js
+videoRouter.get("/:id(\\d+)/edit", getEdit);
+videoRouter.post("/:id(\\d+)/edit", postEdit);
+// 이런식으로 짧게 쓸수도 있다.
+videoRouter.route("/:id(\\d+)/edit").get(getEdit).post(postEdit);
+
+// postEdit에서 id값은 어디서 가져오는것이냐? videoRouter의 :id에서 가져오는것이다.
+export const postEdit = (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+  console.log(req.body); // 어떤 것을 받았는지 확인하고싶은데 undefined이라고 뜸.
+  //왜 express application은 form을 어떻게 다루는지 모른다.
+  console.log(title);
+  // 아래와같이는 안된다고했는데 되긴된다.
+  // const video = videos[id - 1];
+  // video.title = title;
+  const video = videos[id - 1];
+  return res.redirect(`/videos/${id}`);
+};
+```
+
+- express application이 form을 어떻게 다룸? -> [doc](https://expressjs.com/ko/4x/api.html#express.urlencoded) express.urlencoded라는 게 form의 value을 이해하게 해준다.
+- HTML post사용할때 유의할점. input에 name 설정을 해주지 않으면 데이터가 전송되지 않는다.
+- redirect이 url로 연결.
+- 계속 강의를 들으면서 느낀점은 문서를 보는게 중요하다는것이다. 뭔가 프로젝트를 하기전에 문서를 대략 읽어보는게 좋을거같고, 평소에도 보는게 좋을듯하다.
+
 ### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
 
 - 일단은 코드를 작성하고 더러워도 상관없음.
 - 코드를 작성한 시간만큼 코드를 정리를 하는데에 시간을 쓰는거임
 
-### status code란?
+### nodejs, express, npm <-> npx란?, babel ,morgan, pug,
+
+### 어떠한것을 만들떄 어떤 스택,기술을 사용할것인지에대해 알아야할듯. 그럴려면 어떤 스택,기술등이 필요한지 정리해봐야할듯.클론코딩할때도 어떤 스택,기술이 사용되었는지 확인하는게 좋을듯. 프레임워크 공부방법도 알아보면좋을듯.
