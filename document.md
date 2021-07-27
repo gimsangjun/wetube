@@ -112,6 +112,7 @@ app.get("/", gossipMiddleware, handleHome); // 이런식으로 연결되어있�
 
 - [morgan](https://www.npmjs.com/package/morgan) nodejs용 request logger middleware이다.
 - morgan함수를 호출하면, 내가 설정한대로 middleware를 return해준다. 함수를 리턴해주는것이다.!(다섯가지옵션이 있다. 소스코드들도 볼수있는데 한번보면 좋을듯. 문서도.)
+- app.use(~~) callback함수이기때문에, renderg해준뒤에 실행된다.
 
 ### router란?
 
@@ -177,6 +178,7 @@ export default globalRouter;
 
 - export default: 위처럼 default를 하면 하나밖에 export를 하지못한다. 여러개를 할려면? [Link](https://ko.javascript.info/import-export) 대부분 여러개를 export한다.
 - export default 인경우에는 import할때 이름을 마음대로 할수 있지만, export를 여러개를 해야할경우 정확히 그 이름으로 설정해주어야한다.
+- (DB부분에 적어놓은거 가져옴. )import export를 보면서 다음에 내가 다른 언어를 보면 이렇게할수있을까 라는 생각이들었다 -> 계속고민해봣는데 너무 어렵게 생각한듯하다. 모두그냥 한 파일에 적을수 있는데, 그러면 너무 어지러우니까 따로따로 쪼개서 하는거고 그것을 단지 연결만 시켜줬을뿐이라고 생각하기로 했다.
 
 ### Plannig Routes
 
@@ -194,7 +196,7 @@ console.log(req.params); // 또는 console.log(req.params.id);
 ```
 
 - [expressjs](http://expressjs.com/en/guide/routing.html) -> 정규식으로도 선택할수있다.
-- 여기서 :id를 해주면 변수로 쓸수있다.(피라미터라고 한다.)
+- 여기서 :id를 해주면 변수로 쓸수있다.(피라미터라고 한다.-> req.params할때 그 값을 의미한다.)
 - 이렇게 표시하는건 express한테 이게 변수라는걸 알려주길 원해서이다.
 
 ### 정규식(regular expression)
@@ -311,11 +313,12 @@ a(href=`${video.id}/edit`)--->localhost:4000/videos/1/edit
 ```js
 block content
     h4 Change Titie of video
-    form(action"" method="POST")
-        input(placeholder="Viedo Title" value=video.title,required)
+    form(method="POST")
+        input(name="title" placeholder="Viedo Title" value=video.title,required)
         input(value="Save",type="submit")
 ```
 
+- HTTP method
 - [form태그](https://www.nextree.co.kr/p8428/) 기본적으로 method는 GET으로 되어있음.
   <br> GET은 데이터를 요청할경우 씀, 우리가 네이버검색하거나 유튜브검색할때 씀. URL끝에 붙어서 눈에보임. -> 보안에 취약
   <br> POST은 데이터를 처리할경우 씀.로그인할때나 유튜브 제목수정 등에 쓰임.
@@ -331,8 +334,8 @@ videoRouter.route("/:id(\\d+)/edit").get(getEdit).post(postEdit);
 
 // postEdit에서 id값은 어디서 가져오는것이냐? videoRouter의 :id에서 가져오는것이다.
 export const postEdit = (req, res) => {
-  const { id } = req.params;
-  const { title } = req.body;
+  const { id } = req.params; // URL :id parameter를 의미한다.
+  const { title } = req.body; // form안에있는 value의 javascript representation이다.
   console.log(req.body); // 어떤 것을 받았는지 확인하고싶은데 undefined이라고 뜸.
   //왜 express application은 form을 어떻게 다루는지 모른다.
   console.log(title);
@@ -348,12 +351,112 @@ export const postEdit = (req, res) => {
 - HTML post사용할때 유의할점. input에 name 설정을 해주지 않으면 데이터가 전송되지 않는다.
 - redirect이 url로 연결.
 - 계속 강의를 들으면서 느낀점은 문서를 보는게 중요하다는것이다. 뭔가 프로젝트를 하기전에 문서를 대략 읽어보는게 좋을거같고, 평소에도 보는게 좋을듯하다.
+  > req.body는 get request 값은 받아올 수 없나요?
+  > post request 로 전송된 값만 객체로 받아올 수 있는건가요?
+  >
+  > > req.body is only with POST :) <br>
+  > > Not really, is just that only in POST we can send data. Not on GET
+
+### DATABASE mongoDB,mongoose
+
+- mongoDB: 일반적으로는 sql베이스인데 doucment-based이다. 프로그래머처럼 object로 생각한다. JSON-like-document -> packag.json처럼 저장
+- 설치방법 mongoDB -> docs -> server -> installation -> [community edition](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
+- 잘 설치됬는지 확인장법 mongod입력. mongo를 치면 mongo쉘에 입장가능.(node도 치면 똑같이 들어감.)
+- [mongoose](https://mongoosejs.com/): node.js 와 mongoDB를 이어주는 다리(상호작용해주기위해 사용), 자바스크립트로 적으면 mongoose가 mongoDB에게 전해준다.
+
+```js
+//db.js
+import mongoose from "mongoose";
+mongoose.connect("mongodb://127.0.0.1:27017/wetube", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}); // 앞에있는것은 내 로컬호스트이다. mongo를칠때 보면 얻을수있다. 뒤에 wetube는 이제부터 여기에 연결하겠다는 의미이다(아직 생성은 안되었다.). 뒤에있는것은 옵션인데 경고를 해줘서 옵션을 추가해주었다.
+
+const db = mongoose.connection;
+const handleOpen = () => console.log("✅ Conected to DB");
+const handleError = (error) => console.log("DB Error", error);
+db.on("error", handleError); //여러번 발동가능
+db.once("open", handleOpen); //한번만 발동
+//server.js
+import "./db"; //db파일을 임포스해줌으로써 내 서버가 mongo에 연결이 된다. 데이터베이스를 import해준게아니라 db설정파일?을 import해준것이다. import해준순간 자동적으로 실행된다.
+```
+
+- CRUD, create, read , upload ,delete
+
+### models폴더 Video.js -> Video Model
+
+- database가 알아야 할것은 데이터가 어떻게 생겼는가에 대한것. 구체적인 값이 아니라
+- 그래서 우리가 설명을 해주어야됌. video라는 객체에 어떤 데이터들이 필요한지.
+- 이러한 생김새를 schema라고 여기서 부른다. 스키마라는것은 붕어빵틀? 정도라도 생각하면될듯
+
+```js
+//Video.js
+import mongoose from "mongoose";
+
+const videoSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  createdAt: Date,
+  hashtags: [{ type: String }],
+  meta: {
+    views: Number,
+    rating: Number,
+  },
+});
+
+const Video = mongoose.model("Video", videoSchema);
+
+export default Video;
+
+//server.js
+import "./db"; //이 db에 연걸할게요
+import "./models/Video"; // 붕어빵틀
+```
+
+- import export를 보면서 다음에 내가 다른 언어를 보면 이렇게할수있을까 라는 생각이들었다 -> 계속고민해봣는데 너무 어렵게 생각한듯하다. 모두그냥 한 파일에 적을수 있는데, 그러면 너무 어지러우니까 따로따로 쪼개서 하는거고 그것을 단지 연결만 시켜줬을뿐이라고 생각하기로 했다.
+- moogoose의 링크들 [Link1](https://poiemaweb.com/mongoose) [Link2](https://dhddl.tistory.com/173)
+
+<br>
+### init.js -> import가 너무많아 기능별로 분리
+
+```js
+import "./db";
+import "./models/Video";
+```
+
+- server.js에는 server와 관련된 express만
+- 위와같은 형식의 import를 엄청많이하게될텐데 그러면 좀 복잡해지니 분리하겠다.
+
+> server.js 에서
+> const PORT = 4000;
+> const handleListening = () =>
+> console.log(`✅ Server listenting on http://localhost:${PORT} 🚀`);
+> app.listen(PORT, handleListening);
+> 부분을 init.js 로 옮겼는데, 이 부분도 server 에 관련된 코드가 아닌가요?
+> or
+> app.listen(PORT, handleListening); 는 just 서버가 실행되고 있는지 확인만 하고 handleListening 함수를 callback 해주는 건가요?
+> (그렇다면 서버를 열어주는 것은 const app = express(); 부분인가요?)
+>
+> > 답 .listen() is the code that opens the port to listen for connections.
+
+<br>
+
+### (db에서 나옴) callback과 promise
+
+- database가 종료되거나, 바쁘거나 등등, database가 js가 존재하기때문
+- [callback](https://www.hanumoka.net/2018/10/24/javascript-20181024-javascript-callback/) : 어떤 이벤트가 발생했거나 특정 시점에 도달했을 때 시스템에서 호출하는 함수를 말한다. 조금 오래된 방법이다.
+- promise : 이부분더 들어야할듯. 띄어놓은 페이지들 모르는부분 다 검색해봐야할듯.
 
 ### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
 
 - 일단은 코드를 작성하고 더러워도 상관없음.
 - 코드를 작성한 시간만큼 코드를 정리를 하는데에 시간을 쓰는거임
 
-### nodejs, express, npm <-> npx란?, babel ,morgan, pug,
+### 사용한것들
+
+- Server: nodejs, express, npm <-> npx란? + babel ,morgan
+- Template: pug
+- DB: mongoDB, monsgoose
+- xcode란?
 
 ### 어떠한것을 만들떄 어떤 스택,기술을 사용할것인지에대해 알아야할듯. 그럴려면 어떤 스택,기술등이 필요한지 정리해봐야할듯.클론코딩할때도 어떤 스택,기술이 사용되었는지 확인하는게 좋을듯. 프레임워크 공부방법도 알아보면좋을듯.
