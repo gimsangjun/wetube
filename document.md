@@ -45,7 +45,7 @@ app.listen(PORT, handleListening); //서버가 만들어졌고, 서버에게 어
 
 - 서버가 내 컴퓨터 전체를 listen할수는 없다. 이미 많은 프로그램들이 port들을 통해서 소통하고있다. 4000번을 쓰는게 백앤드에서는 관례이다. 나중에는 이 port가 이미쓰고있다고 에러가 생길수도 있다.
 - 뒤에있는 함수가 [callback](https://dalkomit.tistory.com/65)함수라고 하는지는 모르겠는데(이 함수는 listening이 시작되면 호출되는 함수이다.),
-  무엇인가 일을 다른 객체에게 시키고, 그일이 끝나는것을 기다리는게 아니라, 나를 다시 부를때까지 내할일 하고있는것..., 비동기 방식이라고한다.
+  무엇인가 일을 다른 객체에게 시키고, 그일이 끝나는것을 기다리는게 아니라, 나를 다시 부를때까지 내할일 하고있는것..., 비동기 방식이라고한다. -> 뒤에더 자세하게 설명한거있음
 
 ### request에 respond하는방법을 알아볼것이다.
 
@@ -73,7 +73,7 @@ const handleHome = (req, res) => {
 - 어떤 사이트에 접속할때마다 get request 생성하고, 이 get request에 응답하는 서버가 있어야 한다.
 - [Route](https://dog-paw.tistory.com/entry/7-MEAN-%EC%8A%A4%ED%83%9D-Express-Route-%EC%A0%95%EC%9D%98)route는 그냥 url이라고 보면될듯하다. 경로! [Route](https://stylishc.tistory.com/120) - router는 handler로 URL을 정돈하는 것이다.
 
-### middleware ~=== controller
+### middleware ~=== controller , next()
 
 ```js
 const gossipMiddleware = (req, res, next) => {
@@ -363,6 +363,7 @@ export const postEdit = (req, res) => {
 - 설치방법 mongoDB -> docs -> server -> installation -> [community edition](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/)
 - 잘 설치됬는지 확인장법 mongod입력. mongo를 치면 mongo쉘에 입장가능.(node도 치면 똑같이 들어감.)
 - [mongoose](https://mongoosejs.com/): node.js 와 mongoDB를 이어주는 다리(상호작용해주기위해 사용), 자바스크립트로 적으면 mongoose가 mongoDB에게 전해준다.
+- object(data들)를 생성하면 자동으로 id를 부여해준다.
 
 ```js
 //db.js
@@ -415,6 +416,7 @@ import "./models/Video"; // 붕어빵틀
 
 - import export를 보면서 다음에 내가 다른 언어를 보면 이렇게할수있을까 라는 생각이들었다 -> 계속고민해봣는데 너무 어렵게 생각한듯하다. 모두그냥 한 파일에 적을수 있는데, 그러면 너무 어지러우니까 따로따로 쪼개서 하는거고 그것을 단지 연결만 시켜줬을뿐이라고 생각하기로 했다.
 - moogoose의 링크들 [Link1](https://poiemaweb.com/mongoose) [Link2](https://dhddl.tistory.com/173)
+- validation: number부분에 string을 넣으면 그부분이 포함되지않은채 만들어진다는것을 알수있다.(올바르지않은 데이터를 저장하고싶지않으니까) 어느정도 보호된가는것을 알수 있다.
 
 <br>
 ### init.js -> import가 너무많아 기능별로 분리
@@ -444,8 +446,59 @@ import "./models/Video";
 ### (db에서 나옴) callback과 promise
 
 - database가 종료되거나, 바쁘거나 등등, database가 js가 존재하기때문
-- [callback](https://www.hanumoka.net/2018/10/24/javascript-20181024-javascript-callback/) : 어떤 이벤트가 발생했거나 특정 시점에 도달했을 때 시스템에서 호출하는 함수를 말한다. 조금 오래된 방법이다.
-- promise : 이부분더 들어야할듯. 띄어놓은 페이지들 모르는부분 다 검색해봐야할듯.
+- <br>
+  [비동기처리란?](https://joshua1988.github.io/web-development/javascript/javascript-asynchronous-operation/)
+  특정 코드의 연산이 끝날 때까지 코드의 실행을 멈추지 않고 다음 코드를 먼저 실행하는 자바스크립트의 특성을 의미. 그래서 이 문제를 해결하기위해서 callback함수를 사용-> 오래된 방법임.
+- [promise](https://joshua1988.github.io/web-development/javascript/promise-for-beginners/) : 비동기 처리에 사용되는 객체 즉, 비동기 처리의 문제를 해결하기위해 사용되는 객체이다. 해결하기위해서!
+- [async & await](https://joshua1988.github.io/web-development/javascript/js-async-await/)
+  callback의 최신버전, 계속 기달려준다. 직관적이기때문에 javascript가 어디서 기다리는지 바로알수있음.(순서대로 위에서부터 아래로실행됌.)
+- try catch문 : error를 다루기위해 사용, try부분을 실행하다가 오류가 발생하면 catch문 실행됌.
+  <br>
+
+### 왜 callback함수에 error argument가 껴있느냐?
+
+- [Stackoverflow](https://stackoverflow.com/questions/31375728/node-js-callback-function-error-parameter-explanation)
+- [Link](http://thenodeway.io/posts/understanding-error-first-callbacks/) : 콜백의 첫번째 매개변수에 에러 객체를 사용.일종의 코딩약속 [Link](https://www.hanumoka.net/2018/11/02/javascript-20181102-javascript-error-first-callback-pattern/)
+
+<br>
+
+### hashtags -> split()
+
+- "#hello,#hi,#lalala".split(",") -> array로 리턴해준다.
+- 문자열을 배열로 변환 [split함수](https://hianna.tistory.com/377)
+- "food,movies,music".split(",").map(word => `#${wrod}`) 이런식으로도 가능
+- 모든 배열의 값에 function을 실행하는 [map함수](https://velog.io/@daybreak/Javascript-map%ED%95%A8%EC%88%98)
+
+### 데이터베이스에 저장
+
+- 두가지방법이 있음
+
+```js
+export const postUpload =  async (req, res) => {const { title, description, hashtags } = req.body;
+// object를 만들어 준후 저장
+  const video = new Video({
+  ...
+  });
+  await video.save(); // 데이터베이스는 자바스크립트 밖에있어서 이런식으로 처리해주어야한다.
+  return res.redirect("/");
+};
+// create를 써서 그 과정을 생략하게 해줌
+await Video.create({
+    title,
+    description,
+    createdAt: "lsdlddldlldld",
+    hashtags: hashtags.split(",").map((word) => `#${word}`),
+    meta: {
+      views: 0,
+      rating: 0,
+    },
+  });
+
+```
+
+- [save(),create()](https://mongoosejs.com/docs/documents.html) documnet.save() ,model.create()
+- model과 document의 차이, 내가 생각하기론 model은 빵틀이고, documnet는 빵이다.
+- 그런다음 moogo shell 에가서 show dbs를 하면 wetube라는 카테로기에 생긴것을 알수있다.(저장되었다는 의미임).
 
 ### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
 
