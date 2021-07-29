@@ -452,7 +452,7 @@ import "./models/Video";
 - [promise](https://joshua1988.github.io/web-development/javascript/promise-for-beginners/) : 비동기 처리에 사용되는 객체 즉, 비동기 처리의 문제를 해결하기위해 사용되는 객체이다. 해결하기위해서!
 - [async & await](https://joshua1988.github.io/web-development/javascript/js-async-await/)
   callback의 최신버전, 계속 기달려준다. 직관적이기때문에 javascript가 어디서 기다리는지 바로알수있음.(순서대로 위에서부터 아래로실행됌.)
-- try catch문 : error를 다루기위해 사용, try부분을 실행하다가 오류가 발생하면 catch문 실행됌.
+- [try catch문](https://skmagic.tistory.com/157) : error를 다루기위해 사용, try부분을 실행하다가 오류가 발생하면 error객체에 error가 저장됌. catch부분이 실행됌. 그냥 언어차원에서 제공하는것. 라이브러리가 아니라
   <br>
 
 ### 왜 callback함수에 error argument가 껴있느냐?
@@ -486,7 +486,7 @@ export const postUpload =  async (req, res) => {const { title, description, hash
 await Video.create({
     title,
     description,
-    createdAt: "lsdlddldlldld",
+    createdAt: Date.now(),
     hashtags: hashtags.split(",").map((word) => `#${word}`),
     meta: {
       views: 0,
@@ -499,6 +499,121 @@ await Video.create({
 - [save(),create()](https://mongoosejs.com/docs/documents.html) documnet.save() ,model.create()
 - model과 document의 차이, 내가 생각하기론 model은 빵틀이고, documnet는 빵이다.
 - 그런다음 moogo shell 에가서 show dbs를 하면 wetube라는 카테로기에 생긴것을 알수있다.(저장되었다는 의미임).
+- show dbs -> use wetube -> show collections(doc의 묶음) -> db.videos.find() --->help치면 명령어들 나옴
+- 데이터베이스 초기화방법-> 아예 삭제시키는법
+  > How to reset DB
+  > on cmd(console), enter mongo ,use dbName; , db.dropDatabase();
+
+### Video.js
+
+```js
+//Video.js
+const videoSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  createdAt: { type: Date, required: true, default: Date.now },
+  hashtags: [{ type: String }],
+  meta: {
+    views: { type: Number, default: 0, required: true },
+    rating: { type: Number, default: 0, required: true },
+  },
+});
+```
+
+- [스키마옵션들](https://mongoosejs.com/docs/schematypes.html) + maxlength를 설정할때 upload.pug파일(사용자를 위한)과 Video.js파일 둘다 설정을 해주어야한다. pug파일은왜 하냐면 그냥 html태그를 삭제 시켜서 제한을 풀어버릴수있기때문이다.
+- required : 꼭 필요하다. date.now에서 괄호가 없는경우, ()가 있으면 바로실행되기때문에 불렀을 때 실행시키게 하기위해서.
+- default값을 지정하면 따로 doc를 만들때 내가 값을 넣지 않아도 자동으로 디폴트값으로 지정해준다. 이런식으로 default값을 지정하면, 코드를 좀더 줄여나갈수있다.
+
+### exec()
+
+```js
+export const watch = async (req, res) => {
+  const { id } = req.params;
+  const video = await Video.findById(id).exec();
+  return res.render("watch", { pageTitle: `Watching`, video });
+};
+```
+
+- exec() : promise를 리턴해주는것인데 async % await 를 쓰고있어서 신경안써도된다.
+
+### 내가 찾는 video가 없을 경우
+
+```js
+// videoController.js
+export const watch = async (req, res) => {
+  const { id } = req.params;
+  const video = await Video.findById(id);
+  if (!video) {
+    // 먼저 에러를 처리해준다. 404.pug를 만들어 처리해줌. db에서 오류가 나는게 아니라 그냥 없어서 그런거기때문에 try catch문을 사용하는게 아닌듯.
+    return res.renser("404", { pagetitle: "Video no found." });
+  }
+  return res.render("watch", { pageTitle: video.title, video });
+};
+```
+
+### .join() startWith()
+
+```js
+// edit.pug
+// 수정을 할건데 수정할칸에 value를 지정해주고 싶다.(원래 원본값을 넣어놓고싶다.)
+// 그런데 video.jastags출력해보면 배열이기때문에 배열형태로 나오는데 그배열을 형태를 바꿔주기 위해 join()사용한다.
+input(
+  (placeholder = "Hashtags, separated by comma."),
+  required,
+  (type = "text"),
+  (name = "hashtags"),
+  (value = video.hashtags.join())
+);
+
+/// videoController.js
+video.hashtags = hashtags
+  .split(",")
+  .map((word) => (word.startsWith("#") ? word : `#${word}`));
+await video.save();
+```
+
+- [join()](https://www.codingfactory.net/10450) : 배열의 원소를 연결하여 하나의 값으로 만들기
+- [startWith("#")](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith) : 어떤 문자열이 특정 문자로 시작하는지 확인하여 결과를 true 혹은 false로 반환합니다.
+
+### moonse, Video.exists(), Video.findByIdAndUpdate()
+
+```js
+// exists() 객체를 불러오지않고, 그 데이터가 존재하는지만 확인하여 true false를 리턴.
+const video = await Video.findById(id);
+const video = await Video.exists({ _id: id });
+// findByIdAndUpdate() 찾은과 동시에 업데이트를 해준다.
+await Video.findByIdAndUpdate(id, {
+  title,
+  description,
+  hashtags: hashtags
+    .split(",")
+    .map((word) => (word.startsWith("#") ? word : `#${word}`)),
+});
+```
+
+- 공식문서에서 메서드들의 기능들을 보면서 어떻게해야 내 코드에 잘 쓸수있는지 잘 살펴보는게 중요한듯.
+- video와 Video는 차이가있다. video은 데이터를 담은 객체이고, Video는 모델이다.
+
+### monose Middleware
+
+- express Middleware처럼 중간에 그냥 어떤것을 하기위해 넣는것이다.
+- 위의 hashtags를 보면 string으로 넘어온것을 array로 바꿔주기위해 저렇게 하고있는데 저것을 없애기 위해서 Middleware를 사용한다.
+
+```js
+//Video.js
+videoSchema.pre("save", async function () {
+  this.hashtags = this.hashtags[0]
+    .split(",")
+    .map((word) => (word.startsWith("#") ? word : `#${word}`));
+});
+```
+
+- [공식문서](https://mongoosejs.com/docs/middleware.html)
+
+### 느낀점
+
+- 문서들을 처음보면 예제들이 잇는데 이게 무엇을 의미하는지 검색해보면서 정리하면 큰 도움이 될듯. 문서뿐만 아니라 남의 코드들도.
+- 뭔가 코딩은 반복되는 부분을 줄이고,이거는 있을법한 건데하면 있고, 복잡해보이면 나누고 이게 중요한듯 하다.
 
 ### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
 
