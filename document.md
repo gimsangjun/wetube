@@ -201,7 +201,7 @@ console.log(req.params); // 또는 console.log(req.params.id);
 
 ### 정규식(regular expression)
 
-- [regular expression](https://chrisjune-13837.medium.com/%EC%A0%95%EA%B7%9C%EC%8B%9D-%ED%8A%9C%ED%86%A0%EB%A6%AC%EC%96%BC-%EC%98%88%EC%A0%9C%EB%A5%BC-%ED%86%B5%ED%95%9C-cheatsheet-%EB%B2%88%EC%97%AD-61c3099cdca8) [expressjs](https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Regular_Expressions): 문자열로부터 특정 정보를 추출해내는 방법이다.모든 프로그래밍언어에 존재한다.
+- [regular expression](https://chrisjune-13837.medium.com/%EC%A0%95%EA%B7%9C%EC%8B%9D-%ED%8A%9C%ED%86%A0%EB%A6%AC%EC%96%BC-%EC%98%88%EC%A0%9C%EB%A5%BC-%ED%86%B5%ED%95%9C-cheatsheet-%EB%B2%88%EC%97%AD-61c3099cdca8) [expressjs](https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Regular_Expressions): 문자열로부터 특정 정보를 추출해내는 방법이다.모든 프로그래밍언어에 존재한다. 특정조건을 만족하는 string을 담을수 있는 container같은 느낌이다.
 - 정규표현식으로 연습할수 있는 곳 [Link](https://regexr.com/)
 - [stackoverflow](https://stackoverflow.com/questions/15228901/express-js-filter-a-number-and-a-string-in-the-url/15229495) 검색키워드 express url only number
 - [stackoverflow](https://stackoverflow.com/questions/34095126/express-router-id) 검색키워드 express /:id
@@ -319,6 +319,8 @@ block content
 ```
 
 - HTTP method
+- GET 과 POST 는 HTTP 메서드로 클라이언트에서 서버로 무언가를 요청할 때 사용한다.
+- get과 post의 차이 [Link](https://noahlogs.tistory.com/35) get을 통한 요청은 URL주소끝에 파라미터로 포함되어 전송. 이부분을 쿼리 스트링(query string)이라한다.
 - [form태그](https://www.nextree.co.kr/p8428/) 기본적으로 method는 GET으로 되어있음.
   <br> GET은 데이터를 요청할경우 씀, 우리가 네이버검색하거나 유튜브검색할때 씀. URL끝에 붙어서 눈에보임. -> 보안에 취약
   <br> POST은 데이터를 처리할경우 씀.로그인할때나 유튜브 제목수정 등에 쓰임.
@@ -610,10 +612,58 @@ videoSchema.pre("save", async function () {
 
 - [공식문서](https://mongoosejs.com/docs/middleware.html)
 
+### static function
+
+- [공식문서](https://mongoosejs.com/docs/guide.html)
+- 위에 처럼 미들웨어를 사용해서 처리를 할수도있지만, Video.create처럼 내가 직접 함수를 만들어서 쓸수도 있다. model에 함수를 추가하는것이다.
+
+### search 부분 만들기 - req.body와 req.query
+
+- GET 과 POST 는 HTTP 메서드로 클라이언트에서 서버로 무언가를 요청할 때 사용한다.
+- post와 get의차이 [Link](https://noahlogs.tistory.com/35) GET을 통한 요청은 URL 주소 끝에 파라미터로 포함되어 전송되며, 이 부분을 쿼리 스트링 (query string) 이라고 부른다.
+  (이 게시물 잘확인해봐야할듯 기초에 대해 많이있는듯? HTTP에 대해서 많이 공부해봐야할듯.)
+- get을 통해서 search를 만든다.
+- req.body는 post로 보내면 body에 내용이 실린다.
+- req.query는 URL에 실린 데이터를 가져오겠다.
+
+### search 부분 만들기 - regular Expreesion을 이용한 구현
+
+- regular expression을 이용해 내 쿼리에 옵션을 추가할수 있다. mongoose가 아니라 mongodb가 해주는 것이다.
+- 검색키워드 : mongoose find regular expreesion [stackoverflow](https://stackoverflow.com/questions/9824010/mongoose-js-find-user-by-username-like-value) [Link](https://lunker91.tistory.com/entry/Mongoose-regex-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0)
+- 검색키워드 : mongoose regular expression 생성자, Regular expression 생성자는 js에서 제공하는 기능이다. [Link](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/RegExp)
+- js에서 $ 의미 : [Link](https://eotkd4791.github.io/javascript/JavaScript15/) document.getElementById() 의 줄임말로쓰인다.
+
+```js
+// 여기서 왜 @regex를 했을까?
+videos = await Video.find({
+  title: {
+    $regex: new RegExp(keword, "i"),
+  },
+});
+// 그냥 바로이렇게하면되는데
+videos = await Video.find({
+      title: new RegExp(keyword, "i"),
+    }),
+
+// find의 공식문서를 보니, parameter에 mongodb selector라고 하는데 추측해본것으로, mongodb에서 쓰는 방식을 그대로 쓸수 있다는 뜻인거 같다. 그래서 추측하건데, js와 mongodb를 섞어서 쓴거같다.
+// 여기서 깨달은점은 공식문서를 꼼꼼히 읽는게 중요한거같다.(parameter 등등.)
+title: {
+        $regex: keyword, $options: "i"
+  }
+
+```
+
+- $regex를 왜 해준것일까? 그냥 생략해도될텐데, 무슨 의미인지 찾기 힘들다. ->[Link](https://docs.mongodb.com/manual/reference/operator/query/regex/#examples) mongodb에서 쓰이는 것을 그대로 가져온듯하다.
+- [find의 공식문서](https://mongoosejs.com/docs/api/query.html#query_Query-find)를 보면 $쓰이는것을 볼수있다. 여기서 단서를 얻고 해야하는거 같다. -> 착각했다 [옵션](https://fors.tistory.com/403)이었다. parameter를 보니 mongodb selector라고 하는데 추측해본것으로, mongodb에서 쓰는 방식을 그대로 쓸수 있다는 뜻인거 같다. (https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=hy2622ke&logNo=221581574319)
+
+- 무엇인가 정규표현식에 대한 이해가 살짝 떨어진다 내일 다시 검색해봐야겟다. 문자열처리하는데, 그 조건에 해당되면 무조건 그 값 전체를 리턴?하는느낌.
+
 ### 느낀점
 
 - 문서들을 처음보면 예제들이 잇는데 이게 무엇을 의미하는지 검색해보면서 정리하면 큰 도움이 될듯. 문서뿐만 아니라 남의 코드들도.
 - 뭔가 코딩은 반복되는 부분을 줄이고,이거는 있을법한 건데하면 있고, 복잡해보이면 나누고 이게 중요한듯 하다.
+- 뭔가 이해가 잘 안간다 싶으면 직접 해보는게 중요한거같다. 왜 이렇게 했지? 이렇게 하면 안되나?
+- 문서를 읽을때 pameter에 어떤것이 들어가는지도 잘 보는게 중요할거같다. (mongoose find의 pameter에 mongodb selector를 쓸수잇는것처럼.) 즉 꼼꼼히 읽어보자.
 
 ### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
 
