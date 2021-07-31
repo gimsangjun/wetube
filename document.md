@@ -366,6 +366,7 @@ export const postEdit = (req, res) => {
 - 잘 설치됬는지 확인장법 mongod입력. mongo를 치면 mongo쉘에 입장가능.(node도 치면 똑같이 들어감.)
 - [mongoose](https://mongoosejs.com/): node.js 와 mongoDB를 이어주는 다리(상호작용해주기위해 사용), 자바스크립트로 적으면 mongoose가 mongoDB에게 전해준다.
 - object(data들)를 생성하면 자동으로 id를 부여해준다.
+- test할때 데이터 지우는법 : db.\_collection_name.remove({})
 
 ```js
 //db.js
@@ -408,7 +409,7 @@ const videoSchema = new mongoose.Schema({
 });
 
 const Video = mongoose.model("Video", videoSchema);
-
+// 첫번째 인자는 해당 collection의 단수적 표현을 나타내는 문자열이다. 실제 collection의 이름은 videos로 자동변환되어 사용된다.
 export default Video;
 
 //server.js
@@ -654,9 +655,35 @@ title: {
 ```
 
 - $regex를 왜 해준것일까? 그냥 생략해도될텐데, 무슨 의미인지 찾기 힘들다. ->[Link](https://docs.mongodb.com/manual/reference/operator/query/regex/#examples) mongodb에서 쓰이는 것을 그대로 가져온듯하다.
-- [find의 공식문서](https://mongoosejs.com/docs/api/query.html#query_Query-find)를 보면 $쓰이는것을 볼수있다. 여기서 단서를 얻고 해야하는거 같다. -> 착각했다 [옵션](https://fors.tistory.com/403)이었다. parameter를 보니 mongodb selector라고 하는데 추측해본것으로, mongodb에서 쓰는 방식을 그대로 쓸수 있다는 뜻인거 같다. (https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=hy2622ke&logNo=221581574319)
+  <br>
 
+* 검색키워드 : mongodb 단어만 포함되도 [Link](https://whitenode.tistory.com/entry/mongodb%EC%97%90%EC%84%9C-%EB%AC%B8%EC%9E%90%EC%97%B4-%EA%B2%80%EC%83%89-%EC%BF%BC%EB%A6%AC)
+
+- [Model.find()](https://mongoosejs.com/docs/api/model.html#model_Model.find)를 보면
+  filter 부분의 예시를 보면 $gte: 18 이런게 있는데 이게 뭐지하고 검색 -> [mongodb 쿼리옵션](https://fors.tistory.com/403) 이라는 것을 알수있다. -> 아 필터부분에 mongodb처럼 써도 되구나 라는것을 알수있다. -> 그러면 mongodb에 필터부분에 있는 다른것들을 써도되겟구나. 이런식으로 정리하면서 해야할듯.
+
+```js
+// 그래서 mongodb에 있는 or이라는 옵션도 써보앗다.
+const exists = await User.exists({ $or: [{ username }, { email }] });
+```
+
+- 쿼리 논리연산자 비교연산자 [Link](https://www.zerocho.com/category/MongoDB/post/57a17d114105f0a03bc55f74) 검색키워드 : mongodb 두개중 하나만 -> 나중에는 논리연산자 비교연산자 같은 단어를 써야할듯 싶다.
 - 무엇인가 정규표현식에 대한 이해가 살짝 떨어진다 내일 다시 검색해봐야겟다. 문자열처리하는데, 그 조건에 해당되면 무조건 그 값 전체를 리턴?하는느낌.
+
+### password를 DB에 저장할때, 암호화해야한다. 해싱(hashing)
+
+- 그냥 저장하면 안된다.
+- 해싱(hashing) : 일방향함수라 절대 되돌릴수 없다. 입력을 하면 출력값이 나오는데 출력값을 가지고 입력값을 알수가 없다. -> 이런걸 컴퓨터과학에서 deterministic function(결정적 함수)라고 한다. 항상 똑같이 나오니까
+- 해싱을 해주는 라이브러리 [bcrype](https://www.npmjs.com/package/bcrypt) , rainbow table에 의한 공격을 막아준다.
+- 무엇인가 어떤필요한 기능을 해주는 라이브러리를 찾을때, js가 기반이아니라, 서버가 기반이어야하는듯? 무엇이 base이 인지 잘 알아야할거같다. nodejs에 이것저것 붙여서 쓰는거니까.
+
+### status code (HTTP 중요개념)
+
+- 계정생성을 테스트할때 post로 usrename과 password가 200으로 응답을한다면, 자동으로 브라우저에서 아이디를 저장한다. 하지만 나는 이메일이 겹쳐진상태이기때문에 계정이 생성이 안되는 상황이라서 저장하면안된다. 이부분을 처리해줄것이다.
+- [HTTP status code](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes)
+- 400 -> bad request
+- 알맞은 상태코드를 보내는것은 중요하다. 웹사이트의 히스토리를 저장하는데, 200(정상)이 뜨면 무조건 히스토리에 저장하기때문이다. 브라우저에게 상황을 알려줘야한다.
+- [stackoverflow](https://stackoverflow.com/questions/6959017/tell-web-browser-that-login-failed-so-it-doesnt-ask-to-remember-the-password) 나랑똑같은 문제를 겪고있다.
 
 ### 느낀점
 
@@ -664,6 +691,7 @@ title: {
 - 뭔가 코딩은 반복되는 부분을 줄이고,이거는 있을법한 건데하면 있고, 복잡해보이면 나누고 이게 중요한듯 하다.
 - 뭔가 이해가 잘 안간다 싶으면 직접 해보는게 중요한거같다. 왜 이렇게 했지? 이렇게 하면 안되나?
 - 문서를 읽을때 pameter에 어떤것이 들어가는지도 잘 보는게 중요할거같다. (mongoose find의 pameter에 mongodb selector를 쓸수잇는것처럼.) 즉 꼼꼼히 읽어보자.
+- 무엇인가 어떤필요한 기능을 해주는 라이브러리를 찾을때, js가 기반이아니라, 서버가 기반이어야하는듯? 무엇이 base이 인지 잘 알아야할거같다. nodejs에 이것저것 붙여서 쓰는거니까.
 
 ### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
 
