@@ -674,7 +674,7 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 
 - 그냥 저장하면 안된다.
 - 해싱(hashing) : 일방향함수라 절대 되돌릴수 없다. 입력을 하면 출력값이 나오는데 출력값을 가지고 입력값을 알수가 없다. -> 이런걸 컴퓨터과학에서 deterministic function(결정적 함수)라고 한다. 항상 똑같이 나오니까
-- 해싱을 해주는 라이브러리 [bcrype](https://www.npmjs.com/package/bcrypt) , rainbow table에 의한 공격을 막아준다.
+- 해싱을 해주는 라이브러리 [bcrype](https://www.npmjs.com/package/bcrypt) , rainbow table에 의한 공격을 막아준다. 해싱뿐만아니라 compare도 해준다.
 - 무엇인가 어떤필요한 기능을 해주는 라이브러리를 찾을때, js가 기반이아니라, 서버가 기반이어야하는듯? 무엇이 base이 인지 잘 알아야할거같다. nodejs에 이것저것 붙여서 쓰는거니까.
 
 ### status code (HTTP 중요개념)
@@ -684,6 +684,15 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 - 400 -> bad request
 - 알맞은 상태코드를 보내는것은 중요하다. 웹사이트의 히스토리를 저장하는데, 200(정상)이 뜨면 무조건 히스토리에 저장하기때문이다. 브라우저에게 상황을 알려줘야한다.
 - [stackoverflow](https://stackoverflow.com/questions/6959017/tell-web-browser-that-login-failed-so-it-doesnt-ask-to-remember-the-password) 나랑똑같은 문제를 겪고있다.
+
+### 쿠키 cookie , session
+
+- [쿠키와 세션](https://interconnection.tistory.com/74) 둘다 id값을 가지고있는것인데, 정보를 가지고있는 주체가 서버인가 클라이언트인가의 차이이다. 브라우저를 구별하기 위한 id이다. ex)로그인 계속유지
+
+- [express-session](https://ocsusu.tistory.com/55) +[Link](https://velopert.com/406):
+  express-session 은 Express 프레임워크에서 세션을 관리하기 위해 필요한 미들웨어, 알아서 세션을 만들어준다.
+- 세션에다가 정보를 담을수 있다는 사실이 중요., 세션이 오브젝트 형식으로 저장되서, req.session.potato += 1; 이런식으로 가능하다.
+- 따로 아직 처리를 안해줘서, 서버를껏다키면 다 사라진다. -> 나중에 기억할수있게 DB에 저장할것이다.
 
 ### 느낀점
 
