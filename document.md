@@ -687,12 +687,61 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 
 ### 쿠키 cookie , session
 
-- [쿠키와 세션](https://interconnection.tistory.com/74) 둘다 id값을 가지고있는것인데, 정보를 가지고있는 주체가 서버인가 클라이언트인가의 차이이다. 브라우저를 구별하기 위한 id이다. ex)로그인 계속유지
+- [쿠키와 세션](https://interconnection.tistory.com/74) 둘다 id값을 가지고있는것인데, 정보를 가지고있는 주체가 서버인가 클라이언트인가의 차이이다. 브라우저를 구별하기 위한 id이다. 쿠키를 사용해서 어떤 브라우저를 위한 session id인지 알수잇다. ex)로그인 계속유지
 
 - [express-session](https://ocsusu.tistory.com/55) +[Link](https://velopert.com/406):
   express-session 은 Express 프레임워크에서 세션을 관리하기 위해 필요한 미들웨어, 알아서 세션을 만들어준다.
 - 세션에다가 정보를 담을수 있다는 사실이 중요., 세션이 오브젝트 형식으로 저장되서, req.session.potato += 1; 이런식으로 가능하다.
 - 따로 아직 처리를 안해줘서, 서버를껏다키면 다 사라진다. -> 나중에 기억할수있게 DB에 저장할것이다.
+- Session store : 우리가 session을 저장하는곳이다. req.sessionStore, sessionstore에 모든 세션이 저장됌.
+
+### 세션을 다른페이지에도 전달하기 - Logged In User part Two
+
+- console.log(res) -> locals를 비어있는 object를 발견할수있다. 이것을 가지고 templates와 data를 공유할수있다. global이라서 다른 템플릿에서도 쓸수있다.(locals object는 이미 모든 pug template에 import된 object이다.) -> res.render로 넘겨주지않아도된다.
+- pug파일이 locals object에 그냥접근할수있다. -> 이것을 가지고 logged기능을 구현!
+
+### session에 대한 궁금점, 왜 req.session인가 + res.locals
+
+```js
+// 이모든게 새로고침한번할때마다 위에서 아래까지 코드를 흙고간다고 생각해야됌.
+// 브라우저랑 서버랑 따로 생각해야됌.
+// server.js
+app.use(
+  // 먼저 세션id를 할당, 있으면 그대로 진행. 세션이기때문에 데이터는 서버에서관리함. 브라우저에 저장되지않음. sessionstore에 모든 세션(서버)이 저장됌.
+  session({
+    secret: "Hello!",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+
+app.use(localsMiddleware);
+app.use("/", rootRouter);
+app.use("/videos", videoRouter);
+app.use("/users", userRouter);
+
+//userController.js  postEdit
+// 세션 user를 보내야하는데 왜  request에 저장하는걸까? 답은 아래에 적어놓음.
+export const postLogin = async (req, res) => {
+  ....
+  //session id에 해당하는 데이터가 저장되는거임. 세션마다 다르다는 사실이 중요.
+req.session.loogedIn = true;
+req.session.user = user;
+return res.redirect("/"); //홈으로 이동한순간 또 새로고침이 되는거임(코드는 위에서부터 아래로읽음)
+}
+
+// middlewares.js
+export const localsMiddleware = (req, res, next) => {
+  res.locals.loggedIn = Boolean(req.session.loggedIn);
+  res.locals.siteName = "Wetube";
+  res.locals.loggedInuser = req.session.user;
+  next(); // 이 함수만 실행하게 아니기때문이고 뒤에도 app.use가 있기때문이다.
+};
+```
+
+- session은 서버에서 관리하기때문에, 새로고침하여도 사라지지않는다.(따로 db에 처리안해주면 서버가 꺼지면 사라진다. 메모리에 임시저장되어있기때문에) 세션id만 동일하다면 그 세션을 다시 사용할수있다. -> 저장을 위해 req.session을 사용한다.(req.sessionstore에 모두저장되어있다.)
+- res는 딱 뭔가 데이터를 보낼때만 사용한다.
+- 템플렛에서도 데이터를 쓸수있게 res.locals이용한다. [res.locals 활용하여 전역에서 사용 가능한 변수 만들기](https://darrengwon.tistory.com/487)
 
 ### 느낀점
 
@@ -709,7 +758,7 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 
 ### 사용한것들
 
-- Server: nodejs, express, npm <-> npx란? + babel ,morgan
+- Server: nodejs, express, npm <-> npx란? + babel ,morgan, express-session
 - Template: pug
 - DB: mongoDB, monsgoose
 - xcode란?

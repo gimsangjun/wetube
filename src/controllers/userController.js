@@ -38,19 +38,23 @@ export const postLogin = async (req, res) => {
   const { username, password } = req.body;
   const pageTitle = "Login";
   const user = await User.findOne({ username });
-  if (!user) {
+  if (!user) { // 중복되는 이름이나 이메일이 있나.
     return res.status(400).render("login", {
       pageTitle,
       errorMessage: "An account with this username does not exists.",
     });
   }
-  const ok = await bcrypt.compore(password, user.password);
-  if (!ok) {
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) { // 패스워드가 맞다면
     return res.status(400).render("login", {
       pageTitle,
       errorMessage: "Wrong password",
     })
   };
+  // 오류가없다면
+  req.session.loggedIn = true;
+  req.session.user = user;
+  // 왜 res가 아닐까?
   return res.redirect("/");
 };
 export const edit = (req, res) => res.send("Edit User");
