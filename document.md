@@ -690,7 +690,7 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 - [쿠키와 세션](https://interconnection.tistory.com/74) 둘다 id값을 가지고있는것인데, 정보를 가지고있는 주체가 서버인가 클라이언트인가의 차이이다. 브라우저를 구별하기 위한 id이다. 쿠키를 사용해서 어떤 브라우저를 위한 session id인지 알수잇다. ex)로그인 계속유지
 
 - [express-session](https://ocsusu.tistory.com/55) +[Link](https://velopert.com/406):
-  express-session 은 Express 프레임워크에서 세션을 관리하기 위해 필요한 미들웨어, 알아서 세션을 만들어준다.
+  express-session 은 Express 프레임워크에서 세션을 관리하기 위해 필요한 미들웨어, 알아서 세션을 만들어준다. (express session npm 사이트의 note를 살펴보면 좋을듯.)
 - 세션에다가 정보를 담을수 있다는 사실이 중요., 세션이 오브젝트 형식으로 저장되서, req.session.potato += 1; 이런식으로 가능하다.
 - 따로 아직 처리를 안해줘서, 서버를껏다키면 다 사라진다. -> 나중에 기억할수있게 DB에 저장할것이다.
 - Session store : 우리가 session을 저장하는곳이다. req.sessionStore, sessionstore에 모든 세션이 저장됌.
@@ -743,6 +743,95 @@ export const localsMiddleware = (req, res, next) => {
 - res는 딱 뭔가 데이터를 보낼때만 사용한다.
 - 템플렛에서도 데이터를 쓸수있게 res.locals이용한다. [res.locals 활용하여 전역에서 사용 가능한 변수 만들기](https://darrengwon.tistory.com/487)
 
+### connect-mongo
+
+- session을 db에 저장하기위함.
+- [express-session](https://www.npmjs.com/package/express-session)의 warining을 살펴보면 session strorage는 MemoryStore, is purposely not designed for a production environment.(그냥임시적으로 메모리스토어에 저장.)
+- [Compatible Session Stores](https://www.npmjs.com/package/express-session#compatible-session-stores)을 보면 connect-mongo가 있는걸을 볼수있음.
+
+### 모든 방문자의 session을 DB에 저장한다면..
+
+- 로그인하지않은 모든 방문자(+ 봇)를 DB에 저장하는것은 좋지 않은 생각이다. 로그인한 사용자만 저장하도록 하자.
+
+```js
+app.use(
+  session({
+    secret: "Hello!",
+    resave: false,
+    saveUninitialized: false, // 새로운 세션이 있는데, 수정된 적이 없을 때.
+    // 이설정이 무엇을 하는거냐면, 세션을 수정할때만 세션을 DB에 저장(userController에서 수정함.)하고 쿠키를 넘긴다.
+    store: MongoStore.create({ mongoUrl: "mongodb://127.0.0.1:27017/wetube" }),
+  })
+);
+```
+
+### cookie property Expiration and Secrets
+
+- [expires and max-age](https://ko.javascript.info/cookie) : 유효일자와 만료기간.
+- Secrets : DBURL이나, API key, cookie_secret같은것은 공개되지 않기때문에 따로 파일을 만들어줘서 관리한다. 관습적으로 변수명은 대문자로 사용한다. .gitinnore에 추가해줘서 업로드 되지않게한다. [Link](https://sistinafibel.github.io/2019/07/18/Node-%ED%99%98%EA%B2%BD%EB%B3%80%EC%88%98%EB%A5%BC-%EA%B4%80%EB%A6%AC%ED%95%98%EB%8A%94-.env%ED%8C%8C%EC%9D%BC-%EB%A7%8C%EB%93%A4%EA%B8%B0.html)
+- [dotenv](https://www.npmjs.com/package/dotenv) 을 활용해서 환경변수를 관리 할것이다.
+  가장먼저 해줘야한다. require방식으로 사용하면 사용하는 모든파일마다 require을 붙여줘야한다. import를 하면 그렇게 안해도된다.[Link](https://www.daleseo.com/js-dotenv/)
+- 왜 import할때 import "dotenv/config"; 일까? config라는 파일이 있음 찾아보니까. 그래서인듯.
+
+### github로 로그인 구현하기
+
+- [문서](https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps)
+- github.com/settings/apps을 들어간다. OAuth Apps를 눌러준다.
+- 흐름을 보면, github로그인창으로 이동 로그인 -> 코드값을 내가지정한 URL로 보내줌(코드값 요청 GET) -> 코드값을 가지고 github에 다시보냄(POST) 엑세스토큰으로 바꿈. -> access_token으로 Github API를 사용해 user의 정보를 가져올거임.
+
+```js
+a(href="https://github.com/login/oauth/authorize?client_id=9fac726866be2ff14f36&allow_signup=false") Continue with Github &rarr;
+// 이렇게 긴것을 줄이기위해서 이런식으로 만든다.
+a(href="/users/github/start") Continue with Github &rarr;
+// 저 URL로 가면 startGithubLogin function이 실행되고 redirect해준다. 이런식으로 할수있을지 몰랐다.
+
+//userController.js
+export const startGithubLogin = (req, res) => {
+  const baseUrl = "https://github.com/login/oauth/authorize";
+  const config = {
+    client_id: "710e3bf684d455e2a0df",
+    allow_signup: false,
+    scope: "read:user user:email",
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseurl}?${params}`;
+  return res.redirect(finalUrl);
+};
+
+```
+
+- GET으로 요청을 보낼때 ? & 이런 것을 쓴다.
+- scope parameter는 이런정보를 원한다라는것을 알려주는 parameter이다.
+- [URL과 URLSearchParams](https://www.zerocho.com/category/HTML&DOM/post/5b3ae84fb3dabd001b53b9ab)
+
+```js
+export const finishGithubLogin = async (req, res) => {
+  const baseUrl = "https://github.com/login/oauth/access_token";
+  const config = {
+    client_id: process.env.GH_CLIENT,
+    client_secret: process.env.GH_SECRET,
+    code: req.query.code,
+  };
+  const params = new URLSearchParams(config).toString();
+  const finalUrl = `${baseUrl}?${params}`;
+  //데이터 요청
+  const data = await fetch(finalUrl, {
+    method: "POST",
+    headers: {
+      Accept: "application/json", //json형식으로 데이터를 받기위함. 공식문서를 보니 Accept header에 저런식으로 하면된다고함.
+    },
+  });
+  const json = await data.json(); // 바로 사용을 못해서 변환시켜줘야한다.
+  console.log(json);
+  res.send(JSON.stringify(json)); // 프론트엔드에서 보기위해.
+};
+```
+
+- fetch란? [Link1](https://itkjspo56.tistory.com/115) then : 이 요청 끝나면 이것좀 해주라. [Link2](https://ljtaek2.tistory.com/130) 서버로 요청을 보내고 응답을 받을수있도록함. API를 사용할때 자주쓰는듯.
+- fetch가 필요한데 fetch는 브라우저에만 존재하고, 서버엔 없어서 따로 설치해줘야한다.->
+  [node-fetch](https://www.npmjs.com/package/node-fetch) -> 자바스크립트와 Nodejs가 다른 플랫폼이라는 것을 알수있음.
+- [.json()](<https://wooooooak.github.io/javascript/2018/11/25/fetch&json()/>) : // 바로 사용을 못해서 변환시켜줘야한다.
+
 ### 느낀점
 
 - 문서들을 처음보면 예제들이 잇는데 이게 무엇을 의미하는지 검색해보면서 정리하면 큰 도움이 될듯. 문서뿐만 아니라 남의 코드들도.
@@ -758,7 +847,7 @@ export const localsMiddleware = (req, res, next) => {
 
 ### 사용한것들
 
-- Server: nodejs, express, npm <-> npx란? + babel ,morgan, express-session
+- Server: nodejs, express, npm <-> npx란? + babel ,morgan, express-session , connect-mongo , dotenv , node-fetch
 - Template: pug
 - DB: mongoDB, monsgoose
 - xcode란?
