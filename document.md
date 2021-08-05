@@ -162,6 +162,7 @@ app.use("/users", userRouter);
 - 나중에는 데이터베이스등 여러가지를 넣어야하기 때문에 분리하는게 좋다.
 - router는 결국 controller(function)을 사용하는 입장이다.
 - 결국, 생각해보니 router라는 개념이 나온것도 모두 한파일에 놔두기에는 너무 복잡해지니 세세하게 나눈듯 하다.
+- 링크(주소)로 이동하면 그 주소의 컨트롤러(함수)가 실행된다는 것을 알고있어야한다.
 
 ### export import
 
@@ -775,6 +776,7 @@ app.use(
 
 ### github로 로그인 구현하기
 
+- [Link](https://tldud2404.tistory.com/41) 우리가 할려는 일련의 과정들이 정말 알기쉽게 정리되어있다.
 - [문서](https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps)
 - github.com/settings/apps을 들어간다. OAuth Apps를 눌러준다.
 - 흐름을 보면, github로그인창으로 이동 로그인 -> 코드값을 내가지정한 URL로 보내줌(코드값 요청 GET) -> 코드값을 가지고 github에 다시보냄(POST) 엑세스토큰으로 바꿈. -> access_token으로 Github API를 사용해 user의 정보를 가져올거임.
@@ -802,10 +804,12 @@ export const startGithubLogin = (req, res) => {
 
 - GET으로 요청을 보낼때 ? & 이런 것을 쓴다.
 - scope parameter는 이런정보를 원한다라는것을 알려주는 parameter이다.
-- [URL과 URLSearchParams](https://www.zerocho.com/category/HTML&DOM/post/5b3ae84fb3dabd001b53b9ab)
+- [URL과 URLSearchParams](https://www.zerocho.com/category/HTML&DOM/post/5b3ae84fb3dabd001b53b9ab) : URL의 구성요소와 Seacr부분을 다루는 URLSearchParams(브라우저 차원에서 제공)
 
 ```js
 export const finishGithubLogin = async (req, res) => {
+  // 유저가 승인하면 /github/finish?code=xxxx 라는 덧붙여진 내용을 받을거임
+  // 이게 code는 유저가 승인했다고알려주는거임. 이 코드를 가지고 엑세스토큰요청.
   const baseUrl = "https://github.com/login/oauth/access_token";
   const config = {
     client_id: process.env.GH_CLIENT,
@@ -814,7 +818,7 @@ export const finishGithubLogin = async (req, res) => {
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  //데이터 요청
+  //엑세서토큰 요청후 .json() 변환. 엑세스 토큰 : github API와 상호작용할때 쓸거임.
   const data = await fetch(finalUrl, {
     method: "POST",
     headers: {
@@ -831,6 +835,50 @@ export const finishGithubLogin = async (req, res) => {
 - fetch가 필요한데 fetch는 브라우저에만 존재하고, 서버엔 없어서 따로 설치해줘야한다.->
   [node-fetch](https://www.npmjs.com/package/node-fetch) -> 자바스크립트와 Nodejs가 다른 플랫폼이라는 것을 알수있음.
 - [.json()](<https://wooooooak.github.io/javascript/2018/11/25/fetch&json()/>) : // 바로 사용을 못해서 변환시켜줘야한다.
+- [req.query와 req.parmas](https://wooooooak.github.io/web/2018/11/10/req.params-vs-req.query/)
+
+### Oauth와 REST API
+
+- [Oauth](https://showerbugs.github.io/2017-11-16/OAuth-%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%BC%EA%B9%8C) 다른플랫폼으로 로그인할수있게 만들어 주는 산업 표준 프로토콜, [문서](https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps)
+- [REST API](https://gmlwjd9405.github.io/2018/09/21/rest-and-restful.html) 컴퓨터 프로그램간 서로 정보를 교환할수있게. [문서](https://docs.github.com/en/rest/reference/users)
+- [Oauth](https://tldud2404.tistory.com/41) 뭔가 친절하게 설명이 되어있다.
+- client secrets 내가 Oatuh app을 사용할 때 쓰는 비밀번호 같은것.
+- Github Login part Five : 두개의 관계를 생각해본다면, Oauth를 이용하면 로그인할려는 사용자의 access token을 얻을수 있고, 그 토큰을 가지고 REST API를 이용해서 email를 받아오는것인가? -> "친절하게 설명되어있다" 곳에 링크를 클릭해보아라.
+
+```js
+// userController.js , finishGithubLogin
+// private안 경우 보이지 않아서 email데이터 REST API이용해서 요청
+const emailData = await (
+  await fetch(`${apiUrl}/user/emails`, {
+    headers: {
+      Authorization: `token ${access_token}`,
+    },
+  })
+).json();
+// emaildata중 primary true것과 verified과 true인 것을 요청
+const email = emailData.find(
+  (email) => email.primary === true && email.verified === true
+);
+if (!email) {
+  return res.redirect("/login");
+}
+```
+
+### Logout 구현
+
+```js
+//   /users/logout 주소로 이동하면, 유저라우터에서 로그아웃인 라우터로 이동하고 컨트롤러인 logout를 실행한다.
+
+//링크(주소)로 이동하면 그 주소의 컨트롤러(함수)가 실행된다는 것을 알고있어야한다.
+
+//userController.js
+export const logout = (req, res) => {
+  req.session.destroy();
+  return res.redirect("/");
+};
+```
+
+- session을 없애버려야한다.
 
 ### 느낀점
 
