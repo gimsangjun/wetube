@@ -2,6 +2,7 @@ import express from "express";
 import User from "../models/User";
 import fetch from "node-fetch";
 import bcrypt from "bcrypt";
+import session from "express-session";
 
 export const getJoin = (req, res) => res.render("join", { pageTitle: "Join" });
 export const postJoin = async (req, res) => {
@@ -69,7 +70,6 @@ export const startGithubLogin = (req, res) => {
   };
   const params = new URLSearchParams(config).toString();
   const finalUrl = `${baseUrl}?${params}`;
-  console.log(finalUrl);
   return res.redirect(finalUrl);
 };
 
@@ -106,7 +106,6 @@ export const finishGithubLogin = async (req, res) => {
         },
       })
     ).json();
-    console.log(userData);
     // private안 경우 보이지 않아서 email데이터 REST API이용해서 요청
     const emailData = await (
       await fetch(`${apiUrl}/user/emails`, {
@@ -121,7 +120,6 @@ export const finishGithubLogin = async (req, res) => {
     const emailObj = emailData.find(
       (email) => email.primary === true && email.verified === true
     );
-    console.log("emailData", emailData);
     // 깃허브로 로그인했따면 password는 필요없다 전에 이메일 패스워드로 그냥 로그인했더라도
     if (!emailObj) {
       return res.redirect("/login");
@@ -152,5 +150,59 @@ export const logout = (req, res) => {
   req.session.destroy();
   return res.redirect("/");
 };
-export const edit = (req, res) => res.send("Edit User");
+
+export const getEdit = (req, res) => {
+  return res.render("edit-profile", { pageTitle: "Edit Profile" });
+};
+
+export const postEdit = async (req, res) => {
+  // 이렇게 쓰는 이유, 다방면으로 쓸수있기때문.
+  console.log("req.body", req.body);
+  const
+    { session: {
+        user: {
+          _id, username : sessionUsername, email : sessionEmail,
+        },
+    },
+      body: { name,email,username,location,},
+    } = req;
+  console.log("sessionUsername : ",sessionUsername);
+  console.log("username : ", username);
+  // username이 겹치면안되니까. 
+  // 변경을 안할경우
+  if (sessionUsername !== username || sessionEmail !== email) {
+    console.log("here");
+    const exists = await User.exists({ $or: [{ username }, { email }] });
+    if (exists) {
+      //  오류메세지 보여줌. 똑같은 username이나 email 있다고.
+      return res.status(400).render("edit-profile",{ pageTitle: "Edit Profile", errorMessage : "This username/email is already taken"})
+    }
+  }
+  //데이터베이스 업데이트. 
+  //하지만 session은 업데이트가 안되어있음 고쳐야됌(프론트엔드가 적용이 안됌)
+  const updatedUser = await User.findByIdAndUpdate(
+    _id,
+    {
+      name,
+      email,
+      username,
+      location,
+    },
+    { new: true } // DB를 업데이트할뿐만 아니라, return해준다.
+  );
+  req.session.user = updatedUser; // 세션도 업데이트
+  return res.render("edit-profile");
+};
+
+export const getChangePassword = (req, res) => {
+  if (req.session.user.socialOnly === true) {
+    return res.redirect("/");
+  }
+  return res.render("users/change-password", { pageTitle: "Change Password" });
+};
+export const postChangePassword = (req, res) => {
+  // send notification
+  return res.redirect("/");
+};
+
 export const see = (req, res) => res.send("See User");

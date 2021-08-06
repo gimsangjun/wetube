@@ -298,7 +298,7 @@ h3 #{video.views} #{video.views === 1 ? "view" : "views" }
 
 ### 절대경로(absoulte url)와 상대경로(relative url)
 
--제일앞에 /가있으면 절대경로, 무조건 루트에서 시작. <br>
+-제일앞에 /가있으면 절대경로, 무조건 루트에서 시작. 없으면 상대경로 뒷부분만 바뀜 <br>
 a(href="/edit")--->localhost:4000/edit <br>
 a(href="edit")--->localhost:4000/videos/edit <br>
 a(href=`${video.id}/edit`)--->localhost:4000/videos/1/edit
@@ -324,7 +324,7 @@ block content
 - get과 post의 차이 [Link](https://noahlogs.tistory.com/35) get을 통한 요청은 URL주소끝에 파라미터로 포함되어 전송. 이부분을 쿼리 스트링(query string)이라한다.
 - [form태그](https://www.nextree.co.kr/p8428/) 기본적으로 method는 GET으로 되어있음.
   <br> GET은 데이터를 요청할경우 씀, 우리가 네이버검색하거나 유튜브검색할때 씀. URL끝에 붙어서 눈에보임. -> 보안에 취약
-  <br> POST은 데이터를 처리할경우 씀.로그인할때나 유튜브 제목수정 등에 쓰임.
+  <br> POST은 데이터를 처리할경우 씀.로그인할때나 유튜브 제목수정 등에 쓰임. 기본적으로 post를 보내는 주소는 자기주소와 같음. action으로 수정가능.
   <br> 즉 form태그의 method는 form과 back end사이의 정보전송에 관한 방식이다. 착각하지말아야 할것, post도 request를 받으면 response 해줘야한다는 것.
 
 ### POST를 받았을때 back end에서 처리하는 방법
@@ -699,7 +699,8 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 ### 세션을 다른페이지에도 전달하기 - Logged In User part Two
 
 - console.log(res) -> locals를 비어있는 object를 발견할수있다. 이것을 가지고 templates와 data를 공유할수있다. global이라서 다른 템플릿에서도 쓸수있다.(locals object는 이미 모든 pug template에 import된 object이다.) -> res.render로 넘겨주지않아도된다.
-- pug파일이 locals object에 그냥접근할수있다. -> 이것을 가지고 logged기능을 구현!
+- pug파일이 locals object에 그냥접근할수있다.(locals은 자동적으로 views로 import된다.)) -> 이것을 가지고 logged기능을 구현!
+- [locals](https://darrengwon.tistory.com/487)
 
 ### session에 대한 궁금점, 왜 req.session인가 + res.locals
 
@@ -879,6 +880,41 @@ export const logout = (req, res) => {
 ```
 
 - session을 없애버려야한다.
+
+### Edit profile의 문제점
+
+- loggedInUser에 접근하려는데 로그인되어있지않으면 생기는 에러
+- 로그인돼 있지 않은사람들은 접근할수 없게 만들어야함 (/users/edit) -> redirect해줘야함. 몇몇 route를 보호해주는 middle을 만들어야함.
+
+```js
+//middlewares.js
+export const protectorMiddleware = (req, res, next) => {
+  if (req.session.loggedIn) {
+    return next();
+  } else {
+    return res.redirect("/login");
+  }
+};
+//userRouter.js
+userRouter.route("/edit").all(protectorMiddleware).get(getEdit).post(postEdit);
+```
+
+### req에서 가져온 변수 새로운 변수에 넣기.
+
+```js
+const {
+  session: {
+    user: { _id, username: sessionUsername, email: sessionEmail },
+  },
+  body: { name, email, username, location },
+} = req;
+```
+
+- 원본을 왼쪽으로 두고, 새로 할당하는것을 오른 쪽에 둬야하는듯.
+
+### views가 점점 많아지면서 분류하기위해서..
+
+- views/usersd 폴더를 만들어줬음. extends ../base 이런식으로 해줘야함. 폴더를 들어갔기때문에.
 
 ### 느낀점
 
