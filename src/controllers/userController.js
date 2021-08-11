@@ -161,8 +161,9 @@ export const postEdit = async (req, res) => {
   const
     { session: {
         user: {
-          _id, username : sessionUsername, email : sessionEmail,
-        },
+          _id, username : sessionUsername, email : sessionEmail, avatarUrl
+      },
+      file,
     },
       body: { name,email,username,location,},
     } = req;
@@ -183,6 +184,7 @@ export const postEdit = async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(
     _id,
     {
+      avatarUrl: file ? file.path : avatarUrl, // 업로드한 파일이 있으면, file.path를 지정해주고, 아니면 기존에 로그인되어있는데 avatarUrl을 지정해준다.
       name,
       email,
       username,
@@ -200,9 +202,42 @@ export const getChangePassword = (req, res) => {
   }
   return res.render("users/change-password", { pageTitle: "Change Password" });
 };
-export const postChangePassword = (req, res) => {
-  // send notification
-  return res.redirect("/");
+
+export const postChangePassword = async (req, res) => {
+  const {
+    session: {
+      user: { _id },
+    },
+    body: { oldPassword, newPassword, newPasswordConfirmation },
+  } = req;
+  const user = await User.findById(_id); //세션에도 유저가 담기니까. 유저의 _id는 똑같다.
+  const ok = await bcrypt.compare(oldPassword, user.password);
+  if (!ok) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "The current password is incorrect",
+    });
+  }
+  if (newPassword !== newPasswordConfirmation) {
+    return res.status(400).render("users/change-password", {
+      pageTitle: "Change Password",
+      errorMessage: "The password does not match the confirmation",
+    });
+  }
+  user.password = newPassword; 
+  await user.save(); // User.js의 pre save middleware를 사용할수있음. 해쉬함수를 사용하기위해서.
+  return res.redirect("/users/logout");
 };
 
-export const see = (req, res) => res.send("See User");
+// profile see, public하게 누구나 접근할수있게할려고 params에서 가져오게할거임. 
+export const see = async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+  if (!user) {
+    return res.status(404).render("404", { pageTitle: "User not found." });
+  }
+  return res.render("/user/profile", {
+    pageTitle: user.name,
+    user,
+  });
+  };

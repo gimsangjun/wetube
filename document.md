@@ -473,6 +473,8 @@ import "./models/Video";
 - "food,movies,music".split(",").map(word => `#${wrod}`) 이런식으로도 가능
 - 모든 배열의 값에 function을 실행하는 [map함수](https://velog.io/@daybreak/Javascript-map%ED%95%A8%EC%88%98)
 
+<br>
+
 ### 데이터베이스에 저장
 
 - 두가지방법이 있음
@@ -508,6 +510,8 @@ await Video.create({
   > How to reset DB
   > on cmd(console), enter mongo ,use dbName; , db.dropDatabase();
 
+<br>
+
 ### Video.js
 
 ```js
@@ -528,6 +532,8 @@ const videoSchema = new mongoose.Schema({
 - required : 꼭 필요하다. date.now에서 괄호가 없는경우, ()가 있으면 바로실행되기때문에 불렀을 때 실행시키게 하기위해서.
 - default값을 지정하면 따로 doc를 만들때 내가 값을 넣지 않아도 자동으로 디폴트값으로 지정해준다. 이런식으로 default값을 지정하면, 코드를 좀더 줄여나갈수있다.
 
+<br>
+
 ### exec()
 
 ```js
@@ -539,6 +545,8 @@ export const watch = async (req, res) => {
 ```
 
 - exec() : promise를 리턴해주는것인데 async % await 를 쓰고있어서 신경안써도된다.
+
+<br>
 
 ### 내가 찾는 video가 없을 경우
 
@@ -554,6 +562,8 @@ export const watch = async (req, res) => {
   return res.render("watch", { pageTitle: video.title, video });
 };
 ```
+
+<br>
 
 ### .join() startWith()
 
@@ -579,6 +589,8 @@ await video.save();
 - [join()](https://www.codingfactory.net/10450) : 배열의 원소를 연결하여 하나의 값으로 만들기
 - [startWith("#")](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/String/startsWith) : 어떤 문자열이 특정 문자로 시작하는지 확인하여 결과를 true 혹은 false로 반환합니다.
 
+<br>
+
 ### moonse, Video.exists(), Video.findByIdAndUpdate()
 
 ```js
@@ -597,6 +609,8 @@ await Video.findByIdAndUpdate(id, {
 
 - 공식문서에서 메서드들의 기능들을 보면서 어떻게해야 내 코드에 잘 쓸수있는지 잘 살펴보는게 중요한듯.
 - video와 Video는 차이가있다. video은 데이터를 담은 객체이고, Video는 모델이다.
+
+<br>
 
 ### monose Middleware
 
@@ -619,6 +633,8 @@ videoSchema.pre("save", async function () {
 - [공식문서](https://mongoosejs.com/docs/guide.html)
 - 위에 처럼 미들웨어를 사용해서 처리를 할수도있지만, Video.create처럼 내가 직접 함수를 만들어서 쓸수도 있다. model에 함수를 추가하는것이다.
 
+<br>
+
 ### search 부분 만들기 - req.body와 req.query
 
 - GET 과 POST 는 HTTP 메서드로 클라이언트에서 서버로 무언가를 요청할 때 사용한다.
@@ -627,6 +643,8 @@ videoSchema.pre("save", async function () {
 - get을 통해서 search를 만든다.
 - req.body는 post로 보내면 body에 내용이 실린다.
 - req.query는 URL에 실린 데이터를 가져오겠다.
+
+<br>
 
 ### search 부분 만들기 - regular Expreesion을 이용한 구현
 
@@ -671,12 +689,16 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 - 쿼리 논리연산자 비교연산자 [Link](https://www.zerocho.com/category/MongoDB/post/57a17d114105f0a03bc55f74) 검색키워드 : mongodb 두개중 하나만 -> 나중에는 논리연산자 비교연산자 같은 단어를 써야할듯 싶다.
 - 무엇인가 정규표현식에 대한 이해가 살짝 떨어진다 내일 다시 검색해봐야겟다. 문자열처리하는데, 그 조건에 해당되면 무조건 그 값 전체를 리턴?하는느낌.
 
+<br>
+
 ### password를 DB에 저장할때, 암호화해야한다. 해싱(hashing)
 
 - 그냥 저장하면 안된다.
 - 해싱(hashing) : 일방향함수라 절대 되돌릴수 없다. 입력을 하면 출력값이 나오는데 출력값을 가지고 입력값을 알수가 없다. -> 이런걸 컴퓨터과학에서 deterministic function(결정적 함수)라고 한다. 항상 똑같이 나오니까
 - 해싱을 해주는 라이브러리 [bcrype](https://www.npmjs.com/package/bcrypt) , rainbow table에 의한 공격을 막아준다. 해싱뿐만아니라 compare도 해준다.
 - 무엇인가 어떤필요한 기능을 해주는 라이브러리를 찾을때, js가 기반이아니라, 서버가 기반이어야하는듯? 무엇이 base이 인지 잘 알아야할거같다. nodejs에 이것저것 붙여서 쓰는거니까.
+
+<br>
 
 ### status code (HTTP 중요개념)
 
@@ -685,6 +707,8 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 - 400 -> bad request
 - 알맞은 상태코드를 보내는것은 중요하다. 웹사이트의 히스토리를 저장하는데, 200(정상)이 뜨면 무조건 히스토리에 저장하기때문이다. 브라우저에게 상황을 알려줘야한다.
 - [stackoverflow](https://stackoverflow.com/questions/6959017/tell-web-browser-that-login-failed-so-it-doesnt-ask-to-remember-the-password) 나랑똑같은 문제를 겪고있다.
+
+<br>
 
 ### 쿠키 cookie , session
 
@@ -696,11 +720,15 @@ const exists = await User.exists({ $or: [{ username }, { email }] });
 - 따로 아직 처리를 안해줘서, 서버를껏다키면 다 사라진다. -> 나중에 기억할수있게 DB에 저장할것이다.
 - Session store : 우리가 session을 저장하는곳이다. req.sessionStore, sessionstore에 모든 세션이 저장됌.
 
-### 세션을 다른페이지에도 전달하기 - Logged In User part Two
+<br>
+
+### 세션을 다른페이지에도 전달하기 - Logged In User part Two(로그인된 유저)
 
 - console.log(res) -> locals를 비어있는 object를 발견할수있다. 이것을 가지고 templates와 data를 공유할수있다. global이라서 다른 템플릿에서도 쓸수있다.(locals object는 이미 모든 pug template에 import된 object이다.) -> res.render로 넘겨주지않아도된다.
 - pug파일이 locals object에 그냥접근할수있다.(locals은 자동적으로 views로 import된다.)) -> 이것을 가지고 logged기능을 구현!
 - [locals](https://darrengwon.tistory.com/487)
+
+<br>
 
 ### session에 대한 궁금점, 왜 req.session인가 + res.locals
 
@@ -745,11 +773,15 @@ export const localsMiddleware = (req, res, next) => {
 - res는 딱 뭔가 데이터를 보낼때만 사용한다.
 - 템플렛에서도 데이터를 쓸수있게 res.locals이용한다. [res.locals 활용하여 전역에서 사용 가능한 변수 만들기](https://darrengwon.tistory.com/487)
 
+<br>
+
 ### connect-mongo
 
 - session을 db에 저장하기위함.
 - [express-session](https://www.npmjs.com/package/express-session)의 warining을 살펴보면 session strorage는 MemoryStore, is purposely not designed for a production environment.(그냥임시적으로 메모리스토어에 저장.)
 - [Compatible Session Stores](https://www.npmjs.com/package/express-session#compatible-session-stores)을 보면 connect-mongo가 있는걸을 볼수있음.
+
+<br>
 
 ### 모든 방문자의 session을 DB에 저장한다면..
 
@@ -767,6 +799,8 @@ app.use(
 );
 ```
 
+<br>
+
 ### cookie property Expiration and Secrets
 
 - [expires and max-age](https://ko.javascript.info/cookie) : 유효일자와 만료기간.
@@ -774,6 +808,8 @@ app.use(
 - [dotenv](https://www.npmjs.com/package/dotenv) 을 활용해서 환경변수를 관리 할것이다.
   가장먼저 해줘야한다. require방식으로 사용하면 사용하는 모든파일마다 require을 붙여줘야한다. import를 하면 그렇게 안해도된다.[Link](https://www.daleseo.com/js-dotenv/)
 - 왜 import할때 import "dotenv/config"; 일까? config라는 파일이 있음 찾아보니까. 그래서인듯.
+
+<br>
 
 ### github로 로그인 구현하기
 
@@ -838,6 +874,8 @@ export const finishGithubLogin = async (req, res) => {
 - [.json()](<https://wooooooak.github.io/javascript/2018/11/25/fetch&json()/>) : // 바로 사용을 못해서 변환시켜줘야한다.
 - [req.query와 req.parmas](https://wooooooak.github.io/web/2018/11/10/req.params-vs-req.query/)
 
+<br>
+
 ### Oauth와 REST API
 
 - [Oauth](https://showerbugs.github.io/2017-11-16/OAuth-%EB%9E%80-%EB%AC%B4%EC%97%87%EC%9D%BC%EA%B9%8C) 다른플랫폼으로 로그인할수있게 만들어 주는 산업 표준 프로토콜, [문서](https://docs.github.com/en/developers/apps/building-oauth-apps/authorizing-oauth-apps)
@@ -865,6 +903,8 @@ if (!email) {
 }
 ```
 
+<br>
+
 ### Logout 구현
 
 ```js
@@ -880,6 +920,8 @@ export const logout = (req, res) => {
 ```
 
 - session을 없애버려야한다.
+
+<br>
 
 ### Edit profile의 문제점
 
@@ -912,9 +954,111 @@ const {
 
 - 원본을 왼쪽으로 두고, 새로 할당하는것을 오른 쪽에 둬야하는듯.
 
+<br>
+
 ### views가 점점 많아지면서 분류하기위해서..
 
 - views/usersd 폴더를 만들어줬음. extends ../base 이런식으로 해줘야함. 폴더를 들어갔기때문에.
+
+<br>
+
+### 파일업로드하기 multer.js
+
+- express.js에서 파일 업로드를 처리하기 위한 미들웨어인 [multer](https://www.npmjs.com/package/multer) -> req.file에 접근가능하게 만들어서 넘겨줌.
+
+```js
+//edit-profile.pug
+form(method="POST", enctype="multipart/form-data")
+        label(for="avatar") Avatar
+        input(type="file", id="avatar", name="avatar", accept="image/*")
+
+//userControoler.js , postEdit() , 이러한 문법도 있다.
+avatarUrl: file ? file.path : avatarUrl, // 업로드한 파일이 있으면, file.path를 지정해주고, 아니면 기존에 로그인되어있는데 avatarUrl을 지정해준다.
+
+// edit-profile.pug , 맨앞에 /을 붙여준이유 앞붙여주면 상대경로가되서 절대경로로 만들기위해.
+img(src="/" + loggedInUser.avatarUrl, width="100", height="100")
+// 이렇게 에러가 생기는데, 왜냐하면 localhost:4000/uploades/avtarUrl 이 없기때문이다.  Url에 있는 모든것들이 router에 있어야하는게 없어서 그렇다. 이미지를 요청하는것도 url로 하는거라 그런가보다.
+
+//middlewares.js , 파일업로드를 위한 미들웨어. 각각 아바타폴더와 비디오폴더에 넣을려고.
+export const videoUpload = multer({
+  dest: "uploads/videos/",
+  limits: {
+    fileSize: 10000000,
+  },
+});
+
+// videoRouter.js
+videoRouter
+  .route("/upload")
+  .all(protectorMiddleware)
+  .get(getUpload)
+  .post(videoUpload.single("video"), postUpload); //videoUpload는 mideeware.js에 있는 미들웨어이다. path가 아니라 middleware이다. +  multer에게 파일을 여기에 저장하겠다고 알려주는것이다. 그리고 postUpload에게 파일에 대한 정보를 넘겨주고, express.js의 app.post의 인자를 보면 app.post(path, callback [, callback ...])인데ㅡ router처리를 해줬음으로, path이 사라지고 나머지부분은 다 callback함수이다. + 그리고 "multer"가 "req.file"을 제공해준다.
+
+```
+
+- [label태그란]? label은 폼의 양식에 이름 붙이는 태그, id값이 같으면 연결됌. [label 태그는 양식 입력 창의 요소들을 위한 캡션](https://neul-carpediem.tistory.com/266)
+- [<input> 태그의 accept 속성](http://tcpschool.com/html-tag-attrs/input-accept) : <input> 태그의 accept 속성은 서버로 업로드할 수 있는 파일의 타입을 명시
+- [enctype이 뭐야?](https://kasterra.github.io/what-is-multipart-form-data/)
+- 주의할점 : DB에는 업로드할 파일의 위치만 저장하는것이고 실제파일은 내 컴퓨터에 저장하는것이다. 절대 DB에 파일저장을 하지않는다. DB는 그런용도로 쓰는게아니다. 파일은 아마존의 하드드라이브 같은데에 원본을 저장하면된다.
+- Express에게 만약 누군가 /uploads로 가려고 핟나면, uploads폴더의 내용을 보여주라.
+
+<br>
+
+### static, 이미지를 요청하면 처리해줌.
+
+- 검색키워드 express image serve [Link](https://expressjs.com/ko/starter/static-files.html)
+- [정적(static) 파일 서비스 하기](https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=pjok1122&logNo=221545195520)
+
+```js
+//serever.js
+app.use("/uploads", express.static("uploads"));
+// uploads경로에 요청하면, uploads폴더에있는것을 준다.
+```
+
+<br>
+
+### html video
+
+```js
+//watch.pug
+video((src = "/" + video.fileUrl), controls);
+```
+
+- [Link](https://developer.mozilla.org/ko/docs/Web/HTML/Element/Video) controls속성을 주면 소리 조절(volume), 동영상 탐색(seek), 일시 정지(pause)/재시작(resume)을 할 수 있는 컨트롤러를 제공합니다.
+
+<br>
+
+### user와 video를 연결하기
+
+- video에게는 owenr의 \_id를 , user에게는 video의 \_id를(object id)
+- [mongoose populate](https://mongoosejs.com/docs/populate.html)
+
+```js
+//Video.js
+owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+```
+
+- [검색키워드 mongoose type obecjectid](https://mongoosejs.com/docs/schematypes.html#objectids) : mongoose.Schema.Types.ObjectId에 대하여
+- [mongoose populate](https://velog.io/@ehgks0000/populate) 한 스키마의 데이터를 다른 스키마의 id같은것으로 지정을 한다면, ref와 populate를 통해 find를 할때 자동으로 mongoose가 다른 스키마에서 찾은 object데이터를 그대로(원본그대로) 넣어준다.
+
+```js
+const video = await Video.findById(id);
+const owner = await User.findById(video.owner);
+//윗부분을 줄이기 위해서 아래와 같은 기능을 만든 듯. 뭐가 중복된다싶으면 검색을해서 줄여야할듯.
+
+const video = await Video.findById(id).populate("owner");
+// 이렇게하면 video에서 owner부분에 스키마 상으로는 id만 들어가지만, find로 return해준 데이터는 id뿐만아니라 전체가 다 들어간다.
+```
+
+### 테스트로 데이터베이스 지울떄
+
+```js
+mongo
+use wetube
+db.users.remove({})
+db.videos.remove({})
+db.sessions.remove({})
+```
 
 ### 느낀점
 
@@ -931,7 +1075,7 @@ const {
 
 ### 사용한것들
 
-- Server: nodejs, express, npm <-> npx란? + babel ,morgan, express-session , connect-mongo , dotenv , node-fetch
+- Server: nodejs, express, npm <-> npx란? + babel ,morgan, express-session , connect-mongo , dotenv , node-fetch , multer
 - Template: pug
 - DB: mongoDB, monsgoose
 - xcode란?

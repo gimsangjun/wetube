@@ -1,5 +1,6 @@
 import express from "express";
 import Video from "../models/Video";
+import User from "../models/User";
 
 export const home =  async (req, res) => {
   const videos = await Video.find({}).sort({ createdAt: "desc"});
@@ -7,11 +8,15 @@ export const home =  async (req, res) => {
 };
 export const watch = async (req, res) => {
   const { id } = req.params;
-  const video = await Video.findById(id);
+  //const video = await Video.findById(id);
+  //const owner = await User.findById(video.owner);
+  // 윗부분을 줄인게 아래임.
+  const video = await Video.findById(id).populate("owner");
+  console.log(video);
   if (!video) {
     return res.renser("404", { pagetitle: "Video no found." });
   }
-  return res.render("watch", { pageTitle: video.title ,video });
+  return res.render("watch", { pageTitle: video.title ,video});
 };
 export const getEdit = async (req, res) => {
   const { id } = req.params;
@@ -39,12 +44,19 @@ export const getUpload = (req, res) => {
   return res.render("upload", { pageTitle: "Upload Video" });
 };
 
-export const postUpload =  async (req, res) => {
+export const postUpload = async (req, res) => {
+  const { // video의 onwer를 넣어주기위해
+    user: { _id },
+  } = req.session;
+  const { path: fileUrl } = req.file; // mutler가 req.file을 만들어서 보낸준다. 
+  // path: fileurl은 ES6문법인데, 받아온 path를 filePath로 바꾸겟다는 의미이다. ES6 강의가있다
   const { title, description, hashtags } = req.body;
   try {
     await Video.create({
       title,
       description,
+      fileUrl,
+      owner: _id,
       hashtags :Video.formatHashtags(hashtags),
     });
     return res.redirect("/");
