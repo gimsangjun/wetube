@@ -17,9 +17,9 @@ videoRouter
     .all(protectorMiddleware)
     .get(deleteVideo);
 videoRouter
-    .route("/upload").
-    get(getUpload)
+    .route("/upload")
+    .get(getUpload)
     .all(protectorMiddleware)
-    .post(videoUpload.single("video"),postUpload); //"video"는 보내준 post정보에서 name으로 지정한값이다. upload.pug에서.
+    .post(videoUpload.fields([{ name: "video" }, { name: "thumb" }]), postUpload); //"video"는 보내준 post정보에서 name으로 지정한값이다. upload.pug에서.
 
 export default videoRouter;

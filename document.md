@@ -1,7 +1,11 @@
 ### NodeJs , npm , package.json
 
-- NodeJs는 브라우저 밖에서 돌아가는 자바스크립트이다.
+- NodeJs는 브라우저 밖에서 돌아가는 자바스크립트이다. nodeJS는 브라우저가 아닌곳에서 JS를 실행시켜주는 엔진이다.
 - 그래서 node index.js 를 치면 js파일을 실행시킬수 있다.
+- [NodeJS는 벡엔드인가요 프론트엔드인가요](https://okky.kr/article/546877)
+  > NodeJS는 자바스크립트를 브라우저 외의 환경에서 구동할 수 있게 해주는 엔진입니다.
+  > NodeJS 환경에 express 등의 프레임워크를 구동하면 서버가 될 수 있고
+  > NodeJS 환경으로 React를 제작하면 프론트엔드가 됩니다
 - [react](https://velog.io/@jini_eun/React-React.js%EB%9E%80-%EA%B0%84%EB%8B%A8-%EC%A0%95%EB%A6%AC)란? 프론트엔드 라이브러리
 - [express](https://velog.io/@madpotato1713/JAVASCRIPT-express%EB%9E%80)란? nodejs를 사용하여 서버를 개발하고자 하는 개발자들을 위하여 서버를 쉽게 구성할수 있게 만든 프레임워크이다.
 
@@ -180,6 +184,10 @@ export default globalRouter;
 - export default: 위처럼 default를 하면 하나밖에 export를 하지못한다. 여러개를 할려면? [Link](https://ko.javascript.info/import-export) 대부분 여러개를 export한다.
 - export default 인경우에는 import할때 이름을 마음대로 할수 있지만, export를 여러개를 해야할경우 정확히 그 이름으로 설정해주어야한다.
 - (DB부분에 적어놓은거 가져옴. )import export를 보면서 다음에 내가 다른 언어를 보면 이렇게할수있을까 라는 생각이들었다 -> 계속고민해봣는데 너무 어렵게 생각한듯하다. 모두그냥 한 파일에 적을수 있는데, 그러면 너무 어지러우니까 따로따로 쪼개서 하는거고 그것을 단지 연결만 시켜줬을뿐이라고 생각하기로 했다.
+
+### import와 require의 차이점
+
+- [Link](https://www.delftstack.com/ko/howto/javascript/javascript-import-vs-require/) : require()는 CommonJS를 사용하는 node.js문이지만, import()는 ES6에서만 사용, 하지만 import는 babel-node를 이용해서 ES6문법을 사용할수 있는듯.
 
 ### Plannig Routes
 
@@ -456,6 +464,7 @@ import "./models/Video";
 - [promise](https://joshua1988.github.io/web-development/javascript/promise-for-beginners/) : 비동기 처리에 사용되는 객체 즉, 비동기 처리의 문제를 해결하기위해 사용되는 객체이다. 해결하기위해서!
 - [async & await](https://joshua1988.github.io/web-development/javascript/js-async-await/)
   callback의 최신버전, 계속 기달려준다. 직관적이기때문에 javascript가 어디서 기다리는지 바로알수있음.(순서대로 위에서부터 아래로실행됌.)
+- [Promise와 async/await 차이점](https://velog.io/@pilyeooong/Promise%EC%99%80-asyncawait-%EC%B0%A8%EC%9D%B4%EC%A0%90)
 - [try catch문](https://skmagic.tistory.com/157) : error를 다루기위해 사용, try부분을 실행하다가 오류가 발생하면 error객체에 error가 저장됌. catch부분이 실행됌. 그냥 언어차원에서 제공하는것. 라이브러리가 아니라
   <br>
 
@@ -1008,6 +1017,7 @@ videoRouter
 
 - 검색키워드 express image serve [Link](https://expressjs.com/ko/starter/static-files.html)
 - [정적(static) 파일 서비스 하기](https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=pjok1122&logNo=221545195520)
+- Express한테 사람들이 이 폴더 안에 있는 파일들을 볼수있게 해달라고 요청
 
 ```js
 //serever.js
@@ -1039,7 +1049,7 @@ owner: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
 ```
 
 - [검색키워드 mongoose type obecjectid](https://mongoosejs.com/docs/schematypes.html#objectids) : mongoose.Schema.Types.ObjectId에 대하여
-- [mongoose populate](https://velog.io/@ehgks0000/populate) 한 스키마의 데이터를 다른 스키마의 id같은것으로 지정을 한다면, ref와 populate를 통해 find를 할때 자동으로 mongoose가 다른 스키마에서 찾은 object데이터를 그대로(원본그대로) 넣어준다.
+- [mongoose populate](https://velog.io/@ehgks0000/populate) 한 스키마의 데이터를 다른 스키마의 id같은것으로 지정을 한다면, ref와 populate를 통해 find를 할때 자동으로 mongoose가 다른 스키마에서 찾은 object데이터를 그대로(원본그대로) 넣어준다. populate를 하지 않으면 object자체를 주지 않는다.
 
 ```js
 const video = await Video.findById(id);
@@ -1050,7 +1060,22 @@ const video = await Video.findById(id).populate("owner");
 // 이렇게하면 video에서 owner부분에 스키마 상으로는 id만 들어가지만, find로 return해준 데이터는 id뿐만아니라 전체가 다 들어간다.
 ```
 
-### 테스트로 데이터베이스 지울떄
+<br>
+
+### mongoose document와 model의 차이
+
+- [Link](https://mongoosejs.com/docs/documents.html) : model은 document의 subclass이다
+
+```js
+const MyModel = mongoose.model("Test", new Schema({ name: String }));
+const doc = new MyModel();
+
+doc instanceof MyModel; // true
+doc instanceof mongoose.Model; // true
+doc instanceof mongoose.Document; // true
+```
+
+### 데이터베이스(db) 지울일이 있을때
 
 ```js
 mongo
@@ -1060,6 +1085,319 @@ db.videos.remove({})
 db.sessions.remove({})
 ```
 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+### front-end, webpack , Sass
+
+- [공식](https://webpack.js.org/concepts/#entry)
+- [webpack](https://velog.io/@yon3115/%ED%94%84%EB%A1%A0%ED%8A%B8%EC%97%94%EB%93%9C-%ED%95%84%EC%88%98-Webpack%EC%9D%B4%EB%9E%80) : 모든파일을 모아서 압축 변형시켜준다.일일히 따로 보내면 데이터적인 비용이 많이들기때문. 그과정에서 우리가 작성한 코드들을 모든 브라우저가 이해할수 있는 코드로 뱉어내준다.(그래서 ES6문법인 코드를 로더해주는 babel-loader를 쓴다.)
+- 대부분 webpack을 잘 안 쓴다. 이미 포함되어 있는 툴을 쓴다. 대부분 리엑트 같은것들은 이미 내장되어있어서 직접 사용할 일은 거의 없다. 그래도 업계표준이라 알아두면 좋다.
+- webpack cli를 이용해서 콘솔에서 webpack을 사용할수있음.
+- webpack.config.js 파일을 줘야됌. webpack이 읽을(이 파일을 전환시켜달라고 하는거임.)
+- babel-loader : [webpack](https://jeonghwan-kim.github.io/js/2017/05/15/webpack.html)에 쓰이는 loader. ES6 문법을 ES5문법으로
+- client폴더는 우리가 코딩할 폴더이고, assets 폴더는 브라우저가 접근해서 볼 폴더임.
+  우리가 webpack을 실행하면(npm run assets) assets폴더에 웹팩으로 처리가 된 하나의 파일이 만들어진다.(쪼갤수도 있다.)
+- assets폴더에 웹팩으로 처리된 프론트엔드의 js,scss파일등이 있음.
+- assets폴더가 있는지 express는 모르기때문에 알려줘야됌. -> css파일을 요구한다. (base.pug에서 요청하는것을 볼수있음.)
+- [Multiple Entry Points](https://webpack.js.org/concepts/output/#multiple-entry-points) 내가 쪼갠 js파일마다 assets폴더에 각각 쪼개진 상태로 넣기. 검색키워드 : express webpack output filename differently
+- 프론트엔드에 js파일을 추가할때마다(client/js/) webpack에도 알려줘야됌. 그래랴 인식함.
+
+```js
+app.use("/static", express.static("assets")); // 앞에있는 인자는 그냥 접근하기위한 것이고, 실제 폴더명은 다를수있다.
+```
+
+<br>
+
+# 중요한 질문, 리액트와 pug의 차일이 무엇이냐?
+
+- 리액트와 pug의 차이는? [Link](https://www.inflearn.com/questions/72824) 좋은글이다.
+- webpack이 잘 이해가 가지않는다. 파일을 변형시켜서 통합시키는거라면, 이미만들어놓은 pug파일들은 어떻게 해야하나? 여기서는 프론트엔드(css만 처리할거기때문에 상관이없나?)
+  -> [서버/클라이언트 템플릿엔진](https://imgzon.tistory.com/97)의 차이이다. +[Link](https://cceeun.tistory.com/163) +[Link](https://insight-bgh.tistory.com/252)
+
+### SassyCSS
+
+- 보통 Sassycss를 가져다가 css로 변환시킨다. css를 조금더 세련되게 작성하는 코드인듯
+- [짧은설명](https://yunzema.tistory.com/269) [공홈](https://sass-lang.com/guide) : 이 문법을 쓸려면 또 로더가 필요하다.
+- 첫번째 loader(sass-loader)는 sass를 가져다가 일반 css로 변형. 두번째(css-loader)는 폰트같은것을 불러올때 css에 굉장히 유용하게 쓰일 loader. 마지막(style-loader), 변환한 css를 웹사이트에 적용시킬 loader이다.(webpack.config.js) [Link](https://webpack.js.org/loaders/sass-loader/) 로더는 마지막에서부터 실행되기때문에 순서가 거꾸로이다.
+
+### MiniCssExtractPlugin
+
+- [플러그인](https://joshua1988.github.io/webpack-guide/concepts/plugin.html#plugin)이란? 플러그인(plugin)은 웹팩의 기본적인 동작에 추가적인 기능을 제공하는 속성
+- [MiniCssExtractPlugin](https://github.com/webpack-contrib/mini-css-extract-plugin)은 css파일을 분리해주는 녀석이다.
+- 파일을 분리시켜주기위해서기떄문에 main.js파일도 분리시켜줘야한다. 그 방법은 webpack.config.js파일을 보면된다.
+
+### nodemon.json
+
+- 프론트엔드쪽 파일을 고칠때마다 nodemon이 재시작되는 경우가 생김. 그래서 nodemon.json파일을 이용해서 ignore할거임.
+
+```js
+//package.json파일
+"scripts": {
+  "dev": "nodemon --exec babel-node src/init.js",
+  "assets": "webpack --config webpack.config.js"
+},
+
+// 이런식으로 바꿀수있다. webpack은 기본적으로 webpack.configuraiton.js파일을 기본적으로찾고, nodemon.json파일을 찾는다.
+"scripts": {
+  "dev:server": "nodemon",
+  "dev:assets": "webpack"
+},
+```
+
+###
+
+- express.static에 대한 더 깊은이해필요 (base.pug(맨마지막 scripts 부분)와 server.js(app.use(/static)부분)를 보면 이해가안됌.)
+- html의 구조
+- 프론트엔드 언어와 백엔드언어의 종류, 연동시키는법.
+
+<br>
+
+## scss부분 보면서 느낀점
+
+- 두가지규칙 첫번쨰 home, join, login, search같은 template을 만들었다면 screen폴더에 screen파일을 만드는것이다. 두번째 mixin이나 partial파일을 만들었다면, componenets 폴더에 파일을 만들어야한다는것이다.
+- screens안에는 home이랑 search같은걸 넣을것이다. URL이라고 보면된다.
+- component는 header나 footer같은 것이다.(즉 공유되는 것들을 넣는것이다.) 파일을 직접봐보면된다.
+- 유튜브를 클론할것이기떄문에 유튜브 색깔(색깔코드)을 그대로 가져올수있는 도구가있다.
+- reset.scss[https://meyerweb.com/eric/tools/css/reset/] : margin이나 이런것들을 모두 0으로 만들어준다.
+- pug파일을 구조화시킬때(partial이나 mixin으로 생성) scss에도 같은이름의 파일(component폴더)들을 만들어놓는다.
+- [font awesome](https://markettraders.kr/font-awesome/)을 사용하면 유튜브 아이콘등을 사용할수있다. 사용할떄는 pug의 문법을 보면서 어떻게 쓰는지 보면될듯.
+- video배치는 grid를 활용했다. shared.scss와 video.scss,home.scss를 보면된다. 이런식으로 파일을 세세하게 나누는것을 잘보면 좋을듯 하다.
+- css 문법 : [:not()](https://developer.mozilla.org/ko/docs/Web/CSS/:not)
+
+  <br>
+
+- 보면서 느낀점. 라우터랑 css와 만찬가지로 한가지에 파일에 모든 필요한 import를 처리하는게 파일보는게 깔끔하고 좋은듯.(js도 마찬가지인듯) 라우터(라우터파일에 기본적인 import다해놓음.)도 이제 느낀건데, import를 정리해놔서
+  따로 다른파일마다 동일된 import를 해줄필요가 없었음(css도 마찬가지, styles.scss)
+- css도 하나의 클래스처럼 css를 할수잇다는것을 알수잇음. 클래스안에 img, btn등등
+- edit-profile.pug, forms.scss, edit-profile.scss을 보면 좋을듯. 각각의 구성요소마다 css를 어떻게 넣는지, 어떻게 파일을 나눴는지를 알수있음. base.pug에서 통합적으로 styles.scss(static정적파일 요청 개념은 위에)에 요청한다.(styles.scss는 모든 scss파일을 import을 한 상태이다.)
+- 결론적으로 styles.scss는 모든 scss파일 import 그래서 base.pug에서 요청을 한번만 되게 해줌, server.js와 각각의 라우터들도 import를 한다.(라우터와 server.js에 에 대해 확실한 개념정리가 필요한듯.) 그래서 뭔가 파일을 보기쉽게 해주었다.
+
+<br>
+
+### video player만들기 , 여러다른파일들을 webpack으로 포함시키는 방법
+
+- 지금 현재코드가 하나의 main.js가 있는데, 특정페이지에서만 videoplayer 코드가 나왔으면 좋아서, 파일을 쪼갤것이다.
+- [Link](https://velog.io/@khw970421/Webpack-5%EC%9E%A5-output-%EC%97%AC%EB%9F%AC%ED%8C%8C%EC%9D%BC-%EB%B2%88%EB%93%A4%EB%A7%81)
+- [공홈](https://webpack.js.org/concepts/output/) 검색키워드 webpack multi output
+
+<br>
+
+### videoPlayer만들기
+
+- 공식문서에 [MediaElement](https://developer.mozilla.org/ko/docs/Web/API/HTMLMediaElement) 잘 나와있다.
+- videoPlayer.js파일을 보면 거의 바닐라JS랑 똑같다.
+- 무엇인가 백엔드쪽의 js랑 프론트쪽의 js랑 다르다. 프론트쪽은 이미 전달받은 html에서 버튼클릭같은것으로(이벤트들을) 이것저것 다루는것 같다. 백엔드쪽은 어떻게 생긴 html을 전달할것인가? 이런 개념정도. 한번 html넘겨주면 끝이다. 이정도?(프론트엔드 라이브러리를 쓰면 또 다름)
+- 이렇게 비디오플레이어 만드는 과정은, 일단 필요한 버튼(기능)들을 만들고 -> 버튼이 작동하게 만들고 -> 예쁘게 css처리하는과정으로 한다.
+- [event handler envet argumnet](https://developer.mozilla.org/en-US/docs/Web/Events/Event_handlers) + [이벤트에대하여](https://webclub.tistory.com/340)
+- [js input range](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range) 이것을 보면 어떤 이벤트들을 다룰수 잇는지 볼수있다. 여기서는 change(마우스를 딱 놓을떄 발생) input(마우스 움직이는 대로 발생) 가있다.
+- range, button, checkbox등등 각각의 요소마다 생기는 이벤트들이 다르다. [html 요소](https://heropy.blog/2019/05/26/html-elements/)
+- 비디오의 메타 데이터 : metadata란? video빼고 다른 것(움직이는거 말고)을 말한다. 그래서 이 함수가 실행되야 비디오의 총 시간을 알수있다. [video의 전체 길이 가져오기](https://m.blog.naver.com/ivory82/220096880567) + [StackOverFlow](https://stackoverflow.com/questions/40763057/trying-to-get-full-video-duration-but-returning-as-nan/40763111)
+  > JS에서 eventlistener을 추가하기 전에 video가 전부 로딩이 되어서, handleLoadedMetadata() 가 아예 불러지지 않을 수 있습니다.
+  > 해결법은 videoPlayer.js 끝부분 쯤에 하단의 코드를 붙여넣는 것입니다.
+  > if (video.readyState == 4) {
+  > handleLoadedMetadata();
+  > }
+  > video.readyState가 4라는 뜻은 video가 충분히 불러와져서 사용이 가능하다는 뜻입니다. 자세한 정보는 https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/readyState 참고하세요.
+- 이 현상에 대해서 간단하게 정리해서 블로그 글도 하나 올려 보았습니다. 참고 원하시는 분들은 참고하세요. [게시물](https://kasterra.github.io/inconsistent-event-firing-with-html5-video/)
+- video 흘러가는 시간을 표현하기위해서 date() 포맷을 이용해 표현할거임. 왜? 따로 라이브러리를 import할 필요도 없고, 584초같은 길이의 동영상이 있을때 자동으로 분 초 로 쪼개주니까
+- [Fullscreen API](https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API) API형태로 제공한다고 한다.
+- [setTimeout, clearTinmeout](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout) video의 controls(버튼들)을 조작하기위해
+- [font awesome 아이콘 사용법](https://uxgjs.tistory.com/186)
+- [아이콘 숨기기 opacity](https://developer.mozilla.org/ko/docs/Web/CSS/opacity) 투명도를 나타낸다.
+- [scss "&" 의미](https://99geo.tistory.com/5) 처음에는 css에 존재하는 문법인 줄 알았는데 scss에 존재하는거였음.
+- video-player 를 보면서 어떻게 css활용하는지 보면좋을듯.
+
+<br>
+
+### 조회수기능과 api
+
+- 백엔드가 템플릿까지 렌더링하고잇는데 이 방식을 바꿔볼거임.
+- 즉, url이 바뀌지않고 조회수가 늘어나게.
+- 우리가 만든 api에 요청을보낼거임. (videoPlayer.js의 handleEnded)
+- [data attribute](https://velog.io/@yunsungyang-omc/HTML-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%86%8D%EC%84%B1-%EC%82%AC%EC%9A%A9%ED%95%98%EA%B8%B0-data-attribute) : 백엔드에서 렌더링 video id를 얻을려고, 여기서 알수있는점은 백엔드가 그냥 html그 자체만 렌더링해준다는 사실이다.
+- [sendStatus와 status는 다르다.](https://expressjs.com/ko/api.html#res.sendStatus) status만 쓸경우에는 render를 해줘야 의미가있는데(render안해주면 계속 pending함), sendStatus는 그냥 상태코드만 보내고 연결을 끊는다. (videoController.js registerView)
+- [fetch함수](https://www.daleseo.com/js-window-fetch/) 백엔드와 정보를 교환하기위해
+
+<br>
+
+### Recorder, recoder.js
+
+- [API](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia) 또 제공함. 그냥 preview처럼 미리보기만 제공하는거임 보여주기만하고 저장이안됌.
+- 프론트엔드에서 async&await를 사용할려면 [regenerator-runtime](https://www.npmjs.com/package/regenerator-runtime)을 깔아야함.
+- [srcObject](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/srcObject)
+- 내가 혼자한다면 어떻게 알수있을까 -> [Link](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API/Recording_a_media_element) 여기서 단서를 얻어가면서 하는게아니면 힘들듯. 공식 API문서에서 가이드를 누르면 뜸.
+- ondataavailable : 녹화를 시작하면 그 데이터를 어떻게 이용할지를 미리 정하는 듯. 녹화가 종료되면 발생되는 이벤트
+- [removeEventListener](https://developer.mozilla.org/ko/docs/Web/API/EventTarget/removeEventListener)을 이런식으로 이용할수 있다.
+- createObejectURL 그냥 파일을 가리키고 있는 URL이라고 생각하면편함(그 파일에 접근할수 있게). 브라우저메모리에서만 가능한 URL을 만들어준다. 브라우저상에 존재하고 브라우저에서만 파일에 접근할수 있다. 브라우저가 파일을 보여주는 방법임.
+- 다운로드버튼을 만들어볼거임 사실 오른쪽클릭해서 하면되긴하는데 내가 직접 만들어서 사용자에게 제공할거임. a태그를 이용해서 할수있는 이유가 뭘까? video가 url형식으로 접근할수있어서 인듯. [stackoverflow](https://stackoverflow.com/questions/29900551/how-to-add-a-download-video-button-to-html5-player/29965788) 검색키워드 : html5 video create download button , [추가적인 링크](https://miaow-miaow.tistory.com/83)
+- FFmpeg : webm파일을 mp4파일로 바꿀거임. 비디오에 관한 모든것을 할수있음.
+  하지만 실행하며녀 백엔드에서 실행해야하는데 그건 비싸다.
+- [WebAssembly](https://developer.mozilla.org/ko/docs/WebAssembly) : 실행비용이 큰 프로그램들을 브라우저에서 실행할수있다. c로 이루어진 ffmpeg를 실행시킬수 있다. 다른언어로 이루어진것을 js에서 실행. 보통은 백엔드에서만 사용이 가능했는데, 프론트엔드에서도 쓸수있어졌다.
+- 이 두가지가 결합된 [ffmpeg.wasm](https://ffmpegwasm.netlify.app/#demo) 사용할것이다. 사용자의 컴퓨터를 가지고 할거임. 가상의 컴퓨터를 브라우저에서 실행하는 그런느낌. 물론 프론트엔드에서이다. 사실 많이 어렵다. 그냉 접해보는정도로 만족해야할듯.
+- 에러가 너무많음
+  > >
+
+1. 다른분들은 되시는지 모르겠지만 최신버전으로 설치하니 전 400 에러 나네요.
+   npm install @ffmpeg/ffmpepg@0.9.7 @ffmpeg/core@0.8.5
+   로 설치하니 제대로 실행됩니다.
+
+2. Uncaught ReferenceError: createFFmpegCore is not defined at HTMLScriptElement.eventHandler (getCreateFFmpegCore.js:101))
+
+1️⃣ server.js
+app.use("/convert", express.static("node_modules/@ffmpeg/core/dist"));
+2️⃣ recorder.js
+const ffmpeg = createFFmpeg({
+corePath: "/convert/ffmpeg-core.js",
+log: true,
+});
+
+3. Uncaught (in promise) ReferenceError: SharedArrayBuffer is not defined
+   이건
+   app.use((req, res, next) => {
+   res.header("Cross-Origin-Embedder-Policy", "require-corp");
+   res.header("Cross-Origin-Opener-Policy", "same-origin");
+   next();
+   });
+   [링크](https://stackoverflow.com/questions/64962224/how-to-use-ffmpeg-wasm-in-firefox-without-getting-the-sharedarraybuffer) 나중에 더 많이 알게되면 다시보는게 좋을듯.
+   <br>
+
+누가또 정리해놈 4. 버전 달라서 에러났을때 ✅
+-> 니코쌤 사용하시는 버전 설치
+npm install @ffmpeg/core@0.8.5
+npm install @ffmpeg/ffmpeg@0.9.7
+recorder.js에
+corePath: "https://unpkg.com/@ffmpeg/core@0.8.5/dist/ffmpeg-core.js" 붙여쓰기
+
+sharedArrayBuffer 에러났을때 ✅
+-> 질문해주신 분 이슈에서 니코쌤의 답변 참고해서 되었습니다
+링크: https://nomadcoders.co/wetube/lectures/2776/issues/1707
+📌니코쌤의 답변:
+Add this before your routers.
+
+app.use((req, res, next) => {
+res.header("Cross-Origin-Embedder-Policy", "require-corp");
+res.header("Cross-Origin-Opener-Policy", "same-origin");
+next();
+});
+
+And add crossorigin to the github avatar in header.pug
+
+img.header\_\_avatar(src=loggedInUser.avatarUrl,crossorigin)
+
+니코쌤 짱 Nico teacher is the Best👍 화이팅합시당
+
+- [HTTP 구조 및 핵심 요소](https://velog.io/@teddybearjung/HTTP-%EA%B5%AC%EC%A1%B0-%EB%B0%8F-%ED%95%B5%EC%8B%AC-%EC%9A%94%EC%86%8C)
+  읽어보면 좋을듯.
+- [Blob 블롭](https://m.blog.naver.com/magnking/220950061851)
+- [buffer](https://lienkooky.tistory.com/93) 아직여기까지 이해가 잘안감.
+
+<br>
+
+### 썸네일
+
+- 썸네일인 이미지파일과 비디오파일 2가지를 보내야됌. 이전에 express에서 파일을 처리하기위해 multer라는것을 썻는데, 그중에 fields라는것으로 구별할수있음. [multer](https://www.npmjs.com/package/multer) 주의할점은 req.files에 저장됌. req.file아니라.
+- recorder.js에서 영상과 썸네일을 만들고 video.pug form에서 post를 한뒤 router에서 multer미들웨어를 거쳐서 videoController에서 postupload함수를 쓴다.
+
+### flash message
+
+- 사용자에게 message를 남길수있음. session에 근거.
+- 템플릿에서 사용할수있게 , messages라는 locals를 사용하게 해준다.
+
+```js
+export const logout = (req, res) => {
+  req.session.user = null;
+  //req.session.destroy(); 이렇게 했더니 sessions이 필요하닥 에러가 뜸.
+  req.flash("info", "Bye Bye");
+  return res.redirect("/");
+};
+```
+
+- 니꼬 해답. [Link](https://nomadcoders.co/wetube/lectures/2794/issues/1556)
+
+<br>
+
+# 댓글창 만들기. 중요한 내용이 많이나옴. 프론트엔드가 큰 object를 백엔드로 보낼떄
+
+- 지금까지 프론트엔드(client)에서 백엔드로 보내는 방법을 배우지 못했음. 뭔가 바로 client까지 가지않고 pug와 라우터선에서 처리했다고 해야할까..
+- 사실 fetch를 통해 url로 보낼수 있다. 클라이언트와 백엔드가 통신하는것의 중간역할이 api이다.
+- req.params은 잘 작동하는데 req.body 출력하면 아무것도 없다. 서버가 이해할만한것을 보내지 않았기 때문이다.
+- 프론트엔드가 백엔드에 데이터를 주는것은 [fetch](https://www.daleseo.com/js-window-fetch/)(fetch 사용법)인 듯.
+- 데이터를 주고받을때 JSON으로 통일을 시켜줘야 서로가 읽고 보낼수있다.
+- fetch request를 보내면(network에서 무엇을 보냈고, 받았는지 확인가능.) 쿠키를 포함해서 여러가지 정보를 보낸다. 그중에서 쿠키를 통해 어떤 세션(session)에서 보냈는지 확인이 가능하다.
+
+```js
+// req.params은 잘 작동하는데 req.body 출력하면 아무것도 없다. 서버가 이해할만한것을 보내지 않았기 때문이다. -> JSON으로 바꿔주지 않았기 때문이다.
+const handleSubmit = (event) => {
+  event.preventDefault();
+  const textarea = form.querySelector("textarea");
+  const text = textarea.value;
+  const videoId = videoContainer.dataset.id;
+  fetch(`/api/videos/${videoId}/comment`, {
+    method: "POST",
+    body: {
+      text,
+    },
+  });
+};
+
+// fetch부분을 이런식으로 바꿔주면 된다.
+fetch(`/api/videos/${videoId}/comment`, {
+    method: "POST",
+    body: {
+      text,
+    headers: {
+      "Content-Type": "application/json", // express에게 이건 json이라고 알려주는것이다.
+    },
+    body: JSON.stringify({ text }),
+  });
+
+// server.js, json파일을 보냈으니 object로 바꿔줘는 미들웨어이다.
+app.use(express.json());
+
+```
+
+- [javascript - Express 및 Fetch로 POST 요청 본문 가져 오기](https://www.python2.net/questions-1131541.htm), 강의에서는 body paser를 쓰지않았다.
+
+> (BIG 중요 포인트) 요약:
+
+1. [fetch](https://ljtaek2.tistory.com/130)로 백엔드에 요청을 보낼 때에
+   method: "POST",
+   headers: {},
+   body: {},
+
+URL과 더불어 이 세 가지를 덧붙여야 한다.
+
+2. headers에는 이 요청의 세부 사항을 명시하며, body에는 실질적인 컨텐츠가 포함된다.
+
+3. 따로 명시하지 않을 시에 모든 body의 컨텐츠는 Text File로서 전송되고 받아 인식된다.
+
+4. 특히 body: { ... }, 이런 식으로 자바스크립트 오브젝트를 넘겨줄 시 외부에서 이 오브젝트는 [object Object]라는 의미 없는 문자열로 변환된다.
+
+5. 오브젝트와 그 안의 세부 변수 목록들을 넘겨주고 싶을 시, JSON이라는 규약에 의거한 오브젝트 내의 모든 기록을 텍스트화하여 넘겨주어야 하는데, 이때 JSON.stringify({ ... }) 라는 편리한 자체 표준 함수를 사용하면 된다.
+
+6. 덧붙여 headers 안에 "Content-Type": "application/json"이라는 명시를 해 주어 전송된 텍스트가 JSON파일임을 백엔드에 인식시켜 준다.
+
+7. 백엔드에 (이를테면 express를 사용 중이라면) app.use(express.json()); 미들웨어를 추가해주어 자체 내에서 JSON.parse("..."); JSON파일을 다시 자바스크립트 오브젝트로 변환해주는 표준 함수로 요청 body 내의 컨텐츠를 디코딩하는 작업을 한다.
+
+<br>
+
+### req.flash error
+
+```js userController.js
+export const logout = (req, res) => {
+  req.session.destroy(); //이렇게 했더니 sessions이 필요하닥 에러가 뜸.
+  req.flash("info", "Bye Bye");
+  return res.redirect("/");
+};
+```
+
+- 자꾸 로그아웃하면 undefined에러가 뜨고 햇더니 req.flash() 을 지웠더니 에러가 싹다 사라짐 그냥 너무 헛수고한듯. 나중에 이문제에 대해 검색해봐야할듯.
+
 ### 느낀점
 
 - 문서들을 처음보면 예제들이 잇는데 이게 무엇을 의미하는지 검색해보면서 정리하면 큰 도움이 될듯. 문서뿐만 아니라 남의 코드들도.
@@ -1067,6 +1405,8 @@ db.sessions.remove({})
 - 뭔가 이해가 잘 안간다 싶으면 직접 해보는게 중요한거같다. 왜 이렇게 했지? 이렇게 하면 안되나?
 - 문서를 읽을때 pameter에 어떤것이 들어가는지도 잘 보는게 중요할거같다. (mongoose find의 pameter에 mongodb selector를 쓸수잇는것처럼.) 즉 꼼꼼히 읽어보자.
 - 무엇인가 어떤필요한 기능을 해주는 라이브러리를 찾을때, js가 기반이아니라, 서버가 기반이어야하는듯? 무엇이 base이 인지 잘 알아야할거같다. nodejs에 이것저것 붙여서 쓰는거니까.
+- 기능별로 파일들을 어떤식으로 분리하고, import하는지를 잘 배워야 할거 같다.
+- 오류가 있는지 판단할려면 서버상의 콘솔에서 오류가 있는지, 브라우저상에서 콘솔로그를 보고, 데이터가 잘 fetch되는지 확인할려면 browser에서 network를 보면 될 듯 하다.
 
 ### 프로그래머들에게 바이블인책 clean code 에서 니꼬가 배운것
 
@@ -1079,5 +1419,10 @@ db.sessions.remove({})
 - Template: pug
 - DB: mongoDB, monsgoose
 - xcode란?
+- front-end , webpack, wepack-cli , babel-loader(webpack)+ css-loader + style-loder, mini-css-extract-plugin , font-awesome , regenerator-runtime , express-flash
 
 ### 어떠한것을 만들떄 어떤 스택,기술을 사용할것인지에대해 알아야할듯. 그럴려면 어떤 스택,기술등이 필요한지 정리해봐야할듯.클론코딩할때도 어떤 스택,기술이 사용되었는지 확인하는게 좋을듯. 프레임워크 공부방법도 알아보면좋을듯.
+
+### 다른사람이 한것
+
+- https://github.com/junghyuntaek/taektube/tree/master/src

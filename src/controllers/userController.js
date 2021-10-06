@@ -1,8 +1,6 @@
-import express from "express";
 import User from "../models/User";
 import fetch from "node-fetch";
 import bcrypt from "bcrypt";
-import session from "express-session";
 
 export const getJoin = (req, res) => res.render("join", { pageTitle: "Join" });
 export const postJoin = async (req, res) => {
@@ -147,7 +145,8 @@ export const finishGithubLogin = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  req.session.destroy();
+  req.session.destroy(); //이렇게 했더니 sessions이 필요하닥 에러가 뜸.
+  //req.flash을 지웠더니 에러가 싹사라짐.
   return res.redirect("/");
 };
 
@@ -198,6 +197,7 @@ export const postEdit = async (req, res) => {
 
 export const getChangePassword = (req, res) => {
   if (req.session.user.socialOnly === true) {
+    req.flash("error", "Can't change password.");
     return res.redirect("/");
   }
   return res.render("users/change-password", { pageTitle: "Change Password" });
@@ -226,18 +226,25 @@ export const postChangePassword = async (req, res) => {
   }
   user.password = newPassword; 
   await user.save(); // User.js의 pre save middleware를 사용할수있음. 해쉬함수를 사용하기위해서.
+  req.flash("info", "Password updated");
   return res.redirect("/users/logout");
 };
 
 // profile see, public하게 누구나 접근할수있게할려고 params에서 가져오게할거임. 
 export const see = async (req, res) => {
   const { id } = req.params;
-  const user = await User.findById(id);
+  const user = await User.findById(id).populate({
+    path: "videos",
+    populate: {
+      path: "owner",
+      model: "User",
+    },
+  });
   if (!user) {
     return res.status(404).render("404", { pageTitle: "User not found." });
   }
-  return res.render("/user/profile", {
+  return res.render("users/profile", {
     pageTitle: user.name,
     user,
   });
-  };
+};
