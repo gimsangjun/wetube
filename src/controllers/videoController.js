@@ -13,10 +13,9 @@ export const watch = async (req, res) => {
   //const video = await Video.findById(id);
   //const owner = await User.findById(video.owner);
   // 윗부분을 줄인게 아래임.
-  const video = await Video.findById(id).populate("owner").populate("comments");;
-  console.log(video);
+  const video = await Video.findById(id).populate("owner").populate("comments");
   if (!video) {
-    return res.renser("404", { pagetitle: "Video no found." });
+    return res.render("404", { pagetitle: "Video no found." });
   }
   return res.render("watch", { pageTitle: video.title ,video});
 };
@@ -144,7 +143,6 @@ export const createComment = async (req, res) => {
     params: { id },
   } = req ;
   const video = await Video.findById(id);
-  console.log("user", user);
   if (!video) {
     return res.sendStatus(404);
   }
@@ -156,5 +154,19 @@ export const createComment = async (req, res) => {
   //video에 추가시켜
   video.comments.push(comment._id);
   video.save();
-  return res.sendStatus(201);
+  return res.status(201).json({ newCommentId: comment._id });
+};
+
+export const deleteComment = async (req,res) => { 
+  const {
+  session: { user },
+  params: { id },
+  } = req;
+  const comment = await Comment.findById(id);
+  if (user._id == comment.owner) {
+    await Comment.findByIdAndDelete(id);
+    return res.status(201).json();
+  } else {
+    return res.status(403).json();
+  }
 };

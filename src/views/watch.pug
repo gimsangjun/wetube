@@ -37,12 +37,13 @@ block content
     div.video__comments
         ul
             each comment in video.comments.reverse()
-                li.video__comment
+                li.video__comment(data-id=comment.id)
                     i.fas.fa-comment
-                    |  #{comment.text}
+                    span  #{comment.text}
+                    if String(comment.owner) === String(loggedInUser._id)
+                        span.deleteCommentBtn ❌
 block scripts
     script(src="/static/js/videoPlayer.js")
-    //
-        로그인한 유저만 댓글을 달수있게할려고 아래와같이 하였다.
+    // 로그인한 유저만 댓글을 달수있게할려고 아래와같이 하였다.
     if loggedIn
         script(src="/static/js/commentSection.js")

@@ -12,8 +12,6 @@ module.exports = {
     recorder: BASE_JS + "recorder.js",
     commentSection: BASE_JS + "commentSection.js",
     },
-    mode: "development", //이 모드로 하면 개발중이라는 뜻이다.
-    watch: true, // 프론트엔드쪽 자바스크립트에서 무언가를 변견할 때마다 npm run assets하기에는 불편하니까, 하지만 콘솔을 두개를 켜야함 client파일확인, 하나는 backend파일확인
     plugins: [ //css파일을 분리해주는 녀석.
     new MiniCssExtractPlugin({
         filename: "css/styles.css",

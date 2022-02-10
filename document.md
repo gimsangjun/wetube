@@ -193,11 +193,14 @@ export default globalRouter;
 
 - 어떤기능이 필요한가에 따라서 미리 계획을 세워줘야됌. README.md파일에 미리 정리하면서 니꼬는 함.(커맨드키 + 클릭 하면 링크로 파일이 새로열린다. import부분 링크+ 함수도 정의되어 있는데로 이동한다.)
 
-### URL 에 변수를 포함시키게 해준다. URL Parameters
+### URL Parameters
+
+- URL에 변수를 포함시키게해준다. 모든 동영상마다 router를 추가해줄수는 없기때문에
 
 ```js
 videoRouter.get("/:id/edit", edit);
 // id이듯 potato이듯 상관없다. :가 필요하다.
+// express한테 변수라는것을 알려주려면 :가 필요하다.
 //constroller에서
 console.log(req.params); // 또는 console.log(req.params.id);
 // 이런식으로하면 express가 받아들이다는 것을 알수 있다.
@@ -623,7 +626,7 @@ await Video.findByIdAndUpdate(id, {
 
 ### monose Middleware
 
-- express Middleware처럼 중간에 그냥 어떤것을 하기위해 넣는것이다.
+- express Middleware처럼 중간에 그냥 어떤것을 하기위해 넣는것이다. 여라가지방면으로 쓰일수있다.
 - 위의 hashtags를 보면 string으로 넘어온것을 array로 바꿔주기위해 저렇게 하고있는데 저것을 없애기 위해서 Middleware를 사용한다.
 
 ```js
@@ -813,7 +816,7 @@ app.use(
 ### cookie property Expiration and Secrets
 
 - [expires and max-age](https://ko.javascript.info/cookie) : 유효일자와 만료기간.
-- Secrets : DBURL이나, API key, cookie_secret같은것은 공개되지 않기때문에 따로 파일을 만들어줘서 관리한다. 관습적으로 변수명은 대문자로 사용한다. .gitinnore에 추가해줘서 업로드 되지않게한다. [Link](https://sistinafibel.github.io/2019/07/18/Node-%ED%99%98%EA%B2%BD%EB%B3%80%EC%88%98%EB%A5%BC-%EA%B4%80%EB%A6%AC%ED%95%98%EB%8A%94-.env%ED%8C%8C%EC%9D%BC-%EB%A7%8C%EB%93%A4%EA%B8%B0.html)
+- Secrets : DBURL이나, API key, cookie_secret같은것은 공개되지 않기때문에 따로 파일을 만들어줘서 관리한다. 관습적으로 변수명은 대문자로 사용한다. .gitignore에 추가해줘서 업로드 되지않게한다. [Link](https://sistinafibel.github.io/2019/07/18/Node-%ED%99%98%EA%B2%BD%EB%B3%80%EC%88%98%EB%A5%BC-%EA%B4%80%EB%A6%AC%ED%95%98%EB%8A%94-.env%ED%8C%8C%EC%9D%BC-%EB%A7%8C%EB%93%A4%EA%B8%B0.html)
 - [dotenv](https://www.npmjs.com/package/dotenv) 을 활용해서 환경변수를 관리 할것이다.
   가장먼저 해줘야한다. require방식으로 사용하면 사용하는 모든파일마다 require을 붙여줘야한다. import를 하면 그렇게 안해도된다.[Link](https://www.daleseo.com/js-dotenv/)
 - 왜 import할때 import "dotenv/config"; 일까? config라는 파일이 있음 찾아보니까. 그래서인듯.
@@ -977,7 +980,7 @@ const {
 
 ```js
 //edit-profile.pug
-form(method="POST", enctype="multipart/form-data")
+form(method="POST", enctype="multipart/form-data") // enctype 우리 form이 다르게 encode될거란 의미. encoding type
         label(for="avatar") Avatar
         input(type="file", id="avatar", name="avatar", accept="image/*")
 
@@ -1130,6 +1133,8 @@ app.use("/static", express.static("assets")); // 앞에있는 인자는 그냥 �
 - [플러그인](https://joshua1988.github.io/webpack-guide/concepts/plugin.html#plugin)이란? 플러그인(plugin)은 웹팩의 기본적인 동작에 추가적인 기능을 제공하는 속성
 - [MiniCssExtractPlugin](https://github.com/webpack-contrib/mini-css-extract-plugin)은 css파일을 분리해주는 녀석이다.
 - 파일을 분리시켜주기위해서기떄문에 main.js파일도 분리시켜줘야한다. 그 방법은 webpack.config.js파일을 보면된다.
+- style-loader이라는 loader를 사용하면, javascript코드가 css파일을 읽는데,
+  우리는 css파일 따로, js파일 따로 웹팩으로 번들화 시키고싶다. 한번에 할 경우 js 로딩을 기다려야하기 때문이다. 그래서 MiniCssExcractPlugin.loader를 사용한다.
 
 ### nodemon.json
 
@@ -1148,12 +1153,6 @@ app.use("/static", express.static("assets")); // 앞에있는 인자는 그냥 �
   "dev:assets": "webpack"
 },
 ```
-
-###
-
-- express.static에 대한 더 깊은이해필요 (base.pug(맨마지막 scripts 부분)와 server.js(app.use(/static)부분)를 보면 이해가안됌.)
-- html의 구조
-- 프론트엔드 언어와 백엔드언어의 종류, 연동시키는법.
 
 <br>
 
@@ -1181,7 +1180,7 @@ app.use("/static", express.static("assets")); // 앞에있는 인자는 그냥 �
 
 ### video player만들기 , 여러다른파일들을 webpack으로 포함시키는 방법
 
-- 지금 현재코드가 하나의 main.js가 있는데, 특정페이지에서만 videoplayer 코드가 나왔으면 좋아서, 파일을 쪼갤것이다.
+- 지금 현재코드에 하나의 main.js가 있는데, video를 볼때만 videoplayer 코드가 로드가 되면 좋아서(홈화면에서는 비디오를 볼수가 없으니까 videoplayer코드(js)를 가져오면 안좋다. ), 파일을 쪼갤것이다.
 - [Link](https://velog.io/@khw970421/Webpack-5%EC%9E%A5-output-%EC%97%AC%EB%9F%AC%ED%8C%8C%EC%9D%BC-%EB%B2%88%EB%93%A4%EB%A7%81)
 - [공홈](https://webpack.js.org/concepts/output/) 검색키워드 webpack multi output
 
@@ -1309,12 +1308,7 @@ img.header\_\_avatar(src=loggedInUser.avatarUrl,crossorigin)
 - 템플릿에서 사용할수있게 , messages라는 locals를 사용하게 해준다.
 
 ```js
-export const logout = (req, res) => {
-  req.session.user = null;
-  //req.session.destroy(); 이렇게 했더니 sessions이 필요하닥 에러가 뜸.
-  req.flash("info", "Bye Bye");
-  return res.redirect("/");
-};
+
 ```
 
 - 니꼬 해답. [Link](https://nomadcoders.co/wetube/lectures/2794/issues/1556)

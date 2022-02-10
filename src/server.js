@@ -31,6 +31,7 @@ app.use(
 
 app.use("/convert", express.static("node_modules/@ffmpeg/core/dist"));
 
+// ffmpeg사용시 에러해결을위함.
 app.use((req, res, next) => {
 res.header("Cross-Origin-Embedder-Policy", "require-corp");
 res.header("Cross-Origin-Opener-Policy", "same-origin");
