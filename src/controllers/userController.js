@@ -214,7 +214,6 @@ export const postChangePassword = async (req, res) => {
   return res.redirect("/users/logout");
 };
 
-// profile see, public하게 누구나 접근할수있게할려고 params에서 가져오게할거임. 
 export const see = async (req, res) => {
   const { id } = req.params;
   const user = await User.findById(id).populate({
