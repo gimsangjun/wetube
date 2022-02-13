@@ -68,14 +68,15 @@ export const postUpload = async (req, res) => {
     user: { _id },
   } = req.session;
   const { video , thumb } = req.files; // mutler가 req.file을 만들어서 보낸준다. 
-  // path: fileurl은 ES6문법인데, 받아온 path를 filePath로 바꾸겟다는 의미이다. ES6 강의가있다
   const { title, description, hashtags } = req.body;
+  // heroku로 돌리고있으면, 
+  const isHeroku = process.env.NODE_ENV === "production";
   try {
     const newVideo = await Video.create({
       title,
       description,
-      fileUrl: video[0].path,
-      thumbUrl: thumb[0].path,
+      fileUrl: isHeroku ? video[0].location : video[0].path,
+      thumbUrl: isHeroku ? thumb[0].location : thumb[0].path,
       owner: _id,
       hashtags: Video.formatHashtags(hashtags),
     });
@@ -87,6 +88,7 @@ export const postUpload = async (req, res) => {
     return res.redirect("/");
   }
   catch (error) {
+    // 왜 errorMessage가 안보일까.
     console.log(error);
     return res.status(400).render("upload",
       {

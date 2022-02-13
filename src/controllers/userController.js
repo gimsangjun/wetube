@@ -155,44 +155,28 @@ export const getEdit = (req, res) => {
 };
 
 export const postEdit = async (req, res) => {
-  // 이렇게 쓰는 이유, 다방면으로 쓸수있기때문.
-  console.log("req.body", req.body);
-  const
-    { session: {
-        user: {
-          _id, username : sessionUsername, email : sessionEmail, avatarUrl
-      },
-      file,
+  const {
+    session: {
+      user: { _id, avatarUrl },
     },
-      body: { name,email,username,location,},
-    } = req;
-  console.log("sessionUsername : ",sessionUsername);
-  console.log("username : ", username);
-  // username이 겹치면안되니까. 
-  // 변경을 안할경우
-  if (sessionUsername !== username || sessionEmail !== email) {
-    console.log("here");
-    const exists = await User.exists({ $or: [{ username }, { email }] });
-    if (exists) {
-      //  오류메세지 보여줌. 똑같은 username이나 email 있다고.
-      return res.status(400).render("edit-profile",{ pageTitle: "Edit Profile", errorMessage : "This username/email is already taken"})
-    }
-  }
-  //데이터베이스 업데이트. 
-  //하지만 session은 업데이트가 안되어있음 고쳐야됌(프론트엔드가 적용이 안됌)
+    body: { name, email, username, location },
+    file,
+  } = req;
+  // heroku로 돌리고있으면 file.location, 내컴퓨터면 file.path
+  const isHeroku = process.env.NODE_ENV === "production";
   const updatedUser = await User.findByIdAndUpdate(
     _id,
     {
-      avatarUrl: file ? file.path : avatarUrl, // 업로드한 파일이 있으면, file.path를 지정해주고, 아니면 기존에 로그인되어있는데 avatarUrl을 지정해준다.
+      avatarUrl: file ? (isHeroku ? file.location : file.path) : avatarUrl,
       name,
       email,
       username,
       location,
     },
-    { new: true } // DB를 업데이트할뿐만 아니라, return해준다.
+    { new: true }
   );
-  req.session.user = updatedUser; // 세션도 업데이트
-  return res.render("edit-profile");
+  req.session.user = updatedUser;
+  return res.redirect("/users/edit");
 };
 
 export const getChangePassword = (req, res) => {
